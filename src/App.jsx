@@ -511,24 +511,34 @@ function AppContent() {
                 </div>
               </div>
 
-            {/* Action Buttons: Google Earth 3D & Google Search */}
-            <div className="grid grid-cols-2 gap-2">
+            {/* Action Buttons: Google Maps Route, Google Earth 3D & Google Search */}
+            <div className="space-y-2">
               <a
-                href={`https://earth.google.com/web/@${selectedSpot.lat},${selectedSpot.lon},250a,200d,35y,0h,0t,0r`}
+                href={`https://www.google.com/maps/dir/?api=1&origin=${HOME_LOCATION.lat},${HOME_LOCATION.lon}&destination=${selectedSpot.lat},${selectedSpot.lon}&travelmode=driving`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-1.5 py-2 px-2 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold rounded-xl text-[10px] transition text-center"
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-extrabold rounded-xl text-xs transition text-center shadow-md"
               >
-                🌍 Google Earth 3D
+                🚗 Route in Google Maps starten (ab Calle Barcelona 3)
               </a>
-              <a
-                href={`https://www.google.com/search?q=${encodeURIComponent(selectedSpot.name + ' urbex abandonado ' + selectedSpot.province)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-1.5 py-2 px-2 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/40 text-blue-300 font-bold rounded-xl text-[10px] transition text-center"
-              >
-                🔍 Google & Urbex Suche
-              </a>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={`https://earth.google.com/web/@${selectedSpot.lat},${selectedSpot.lon},250a,200d,35y,0h,0t,0r`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-1.5 py-2 px-2 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold rounded-xl text-[10px] transition text-center"
+                >
+                  🌍 Google Earth 3D
+                </a>
+                <a
+                  href={`https://www.google.com/search?q=${encodeURIComponent(selectedSpot.name + ' urbex abandonado ' + selectedSpot.province)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-1.5 py-2 px-2 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/40 text-blue-300 font-bold rounded-xl text-[10px] transition text-center"
+                >
+                  🔍 Google & Urbex Suche
+                </a>
+              </div>
             </div>
 
 
@@ -681,12 +691,24 @@ function AppContent() {
             <Search className={`w-4 h-4 ${scanning ? 'animate-spin' : ''}`} />
             {scanning ? 'Satelliten-Scan läuft…' : 'Neuen Scan starten'}
           </button>
-          <button
-            onClick={handleKmlDownload}
-            className="btn-amber w-full py-2.5 px-4 text-sm"
-          >
-            <Download className="w-4 h-4" /> KML für Google Maps herunterladen
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={handleKmlDownload}
+              className="btn-amber py-2 px-2 text-xs flex items-center justify-center gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5" /> KML Datei
+            </button>
+            <a
+              href={selectedSpot 
+                ? `https://www.google.com/maps/dir/?api=1&origin=${HOME_LOCATION.lat},${HOME_LOCATION.lon}&destination=${selectedSpot.lat},${selectedSpot.lon}&travelmode=driving`
+                : `https://www.google.com/maps/dir/?api=1&origin=${HOME_LOCATION.lat},${HOME_LOCATION.lon}&destination=${selectedCity.lat},${selectedCity.lon}&travelmode=driving`}
+              target="_blank"
+              rel="noreferrer"
+              className="py-2 px-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 text-blue-300 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition text-center"
+            >
+              🗺️ Maps Route
+            </a>
+          </div>
         </div>
       </aside>
 
@@ -849,11 +871,19 @@ function AppContent() {
                   </div>
                   <div className="text-[10px] text-amber-400 font-semibold mb-1">{spot.province} · {spot.type} · Baujahr {spot.year}</div>
                   <p className="text-[10px] text-slate-300 leading-relaxed mb-2">{spot.history.slice(0, 100)}…</p>
-                  <div className="flex gap-1.5 text-[9px] font-bold">
+                  <div className="flex gap-1.5 text-[9px] font-bold mb-2">
                     <span className="bg-slate-800 text-emerald-400 rounded px-1.5 py-0.5 border border-slate-700">NDVI {spot.ndvi}</span>
                     <span className="bg-slate-800 text-blue-400 rounded px-1.5 py-0.5 border border-slate-700">NDWI {spot.ndwi}</span>
                     <span className={`rounded px-1.5 py-0.5 ${RISK_BG[spot.risk]} ${RISK_COLOR[spot.risk]}`}>⚠ {spot.risk}</span>
                   </div>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&origin=${HOME_LOCATION.lat},${HOME_LOCATION.lon}&destination=${spot.lat},${spot.lon}&travelmode=driving`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-1 py-1.5 px-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold rounded text-[10px] transition text-center w-full"
+                  >
+                    🚗 Route ab Calle Barcelona 3
+                  </a>
                 </div>
               </Popup>
 
