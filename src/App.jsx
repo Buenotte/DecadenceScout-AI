@@ -14008,6 +14008,8 @@ export default function App() {
                   <option value="HOCH">🔴 Hoch</option>
                 </select>
               </div>
+            </div>
+            
             {/* Category Filter Chips */}
             <div>
               <label className="text-[9px] text-slate-400 font-bold block mb-1">Gebäudetyp / Kriterium</label>
