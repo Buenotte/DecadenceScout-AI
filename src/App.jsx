@@ -75,13 +75,17 @@ function MapFlyTo({ center, showAll, spots, selectedSpot }) {
     }
   }, [selectedSpot, map]);
 
-  // Fit bounds when all spots view is active
+  // Fit bounds when all spots view is active or when closing a selected spot
   useEffect(() => {
-    if (showAll && spots.length > 0 && !selectedSpot) {
-      const bounds = L.latLngBounds(spots.map(s => [s.lat, s.lon]));
-      map.fitBounds(bounds, { padding: [50, 50], duration: 1.2 });
+    if (!selectedSpot && spots.length > 0) {
+      if (showAll || spots.length > 1) {
+        const bounds = L.latLngBounds(spots.map(s => [s.lat, s.lon]));
+        map.fitBounds(bounds, { padding: [50, 50], duration: 1.2 });
+      } else if (center) {
+        map.flyTo([center.lat, center.lon], 10, { duration: 1.2 });
+      }
     }
-  }, [showAll, spots, selectedSpot, map]);
+  }, [showAll, spots, selectedSpot, center, map]);
 
   return null;
 }
