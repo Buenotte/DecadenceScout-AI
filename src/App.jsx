@@ -233,6 +233,7 @@ function AppContent() {
 
   const [scriptViewMode, setScriptViewMode]   = useState('text'); // 'text' (Fließtext zum Vorlesen) vs 'structure' (3-Akt)
   const [showTeleprompter, setShowTeleprompter] = useState(false);
+  const [showQrModal, setShowQrModal]           = useState(false);
 
   const handleDeepHistoryResearch = (spot) => {
     if (!spot) return;
@@ -928,6 +929,13 @@ function AppContent() {
           >
             🗺️ Alle {filteredSpots.length} Objekte anzeigen
           </button>
+
+          <button
+            onClick={() => setShowQrModal(true)}
+            className="py-1.5 px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-extrabold rounded-xl transition shrink-0 cursor-pointer flex items-center gap-1.5 shadow-md"
+          >
+            📱 Handy QR-Code
+          </button>
         </div>
 
         {/* Map layer & Zoom controls */}
@@ -1070,6 +1078,46 @@ function AppContent() {
 
       {/* Toast Notification Container */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      {/* QR-Code Modal for Smartphone Access */}
+      {showQrModal && (
+        <div className="fixed inset-0 z-[5000] bg-slate-950/90 backdrop-blur-xl p-6 flex flex-col items-center justify-center text-center">
+          <div className="bg-slate-900 p-6 rounded-3xl border border-amber-500/40 shadow-2xl max-w-sm w-full space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+              <h3 className="text-sm font-black text-amber-400">📱 Auf Smartphone öffnen</h3>
+              <button
+                onClick={() => setShowQrModal(false)}
+                className="text-slate-400 hover:text-slate-200 font-bold text-sm px-2 py-0.5 rounded bg-slate-800"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Halten Sie einfach die <strong>Handy-Foto-Kamera</strong> vor diesen Bildschirm, um das Dashboard auf Ihrem Telefon zu öffnen:
+            </p>
+
+            <div className="bg-white p-4 rounded-2xl inline-block shadow-xl border-4 border-amber-500/30">
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=http://192.168.1.15:5173"
+                alt="Handy QR Code"
+                className="w-48 h-48 mx-auto"
+              />
+            </div>
+
+            <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[11px] font-mono text-cyan-300">
+              http://192.168.1.15:5173
+            </div>
+
+            <button
+              onClick={() => setShowQrModal(false)}
+              className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs transition"
+            >
+              Fertig / Zurück zum PC
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Fullscreen Teleprompter Reading Modal */}
       {showTeleprompter && spotDetails && (() => {
