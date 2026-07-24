@@ -13745,17 +13745,29 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Fly to city or fit all spots when showAll is active
-function MapFlyTo({ center, showAll, spots }) {
+// Smooth auto-zoom helper for map navigation and spot inspection
+function MapFlyTo({ center, showAll, spots, selectedSpot }) {
   const map = useMap();
+
   useEffect(() => {
-    if (showAll && spots.length > 0) {
+    window._leaflet_map = map;
+  }, [map]);
+
+  // High-detail auto-zoom when a spot is selected
+  useEffect(() => {
+    if (selectedSpot && selectedSpot.lat && selectedSpot.lon) {
+      map.flyTo([selectedSpot.lat, selectedSpot.lon], 16, { duration: 1.3 });
+    }
+  }, [selectedSpot, map]);
+
+  // Fit bounds when all spots view is active
+  useEffect(() => {
+    if (showAll && spots.length > 0 && !selectedSpot) {
       const bounds = L.latLngBounds(spots.map(s => [s.lat, s.lon]));
       map.fitBounds(bounds, { padding: [50, 50], duration: 1.2 });
-    } else if (center) {
-      map.flyTo([center.lat, center.lon], 9, { duration: 1.2 });
     }
-  }, [center, showAll, spots, map]);
+  }, [showAll, spots, selectedSpot, map]);
+
   return null;
 }
 
@@ -14323,20 +14335,56 @@ export default function App() {
           </button>
         </div>
 
-        {/* Map layer toggle */}
-        <div className="absolute top-5 right-5 z-[1000] flex gap-2">
-          <button
-            onClick={() => setMapLayer('satellite')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${mapLayer === 'satellite' ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'glass-panel border-slate-700 text-slate-400 hover:border-slate-500'}`}
-          >
-            <Satellite className="w-3.5 h-3.5" /> Satellit
-          </button>
-          <button
-            onClick={() => setMapLayer('osm')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${mapLayer === 'osm' ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'glass-panel border-slate-700 text-slate-400 hover:border-slate-500'}`}
-          >
-            <Map className="w-3.5 h-3.5" /> Straßen
-          </button>
+        {/* Map layer & Zoom controls */}
+        <div className="absolute top-5 right-5 z-[1000] flex flex-col gap-2 items-end">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setMapLayer('satellite')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${mapLayer === 'satellite' ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'glass-panel border-slate-700 text-slate-400 hover:border-slate-500'}`}
+            >
+              <Satellite className="w-3.5 h-3.5" /> Satellit
+            </button>
+            <button
+              onClick={() => setMapLayer('osm')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${mapLayer === 'osm' ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'glass-panel border-slate-700 text-slate-400 hover:border-slate-500'}`}
+            >
+              <Map className="w-3.5 h-3.5" /> Straßen
+            </button>
+          </div>
+
+          {/* Quick Zoom Controls (+ / - / Übersicht) */}
+          <div className="glass-panel p-1 rounded-xl border border-amber-500/30 flex flex-col gap-1 bg-slate-950/90 shadow-2xl">
+            <button
+              title="Heranzoomen (+)"
+              onClick={() => {
+                if (window._leaflet_map) window._leaflet_map.zoomIn();
+              }}
+              className="w-8 h-8 bg-slate-800 hover:bg-amber-500/20 border border-slate-700 text-amber-400 font-black rounded-lg text-sm flex items-center justify-center transition cursor-pointer"
+            >
+              +
+            </button>
+            <button
+              title="Herauszoomen (-)"
+              onClick={() => {
+                if (window._leaflet_map) window._leaflet_map.zoomOut();
+              }}
+              className="w-8 h-8 bg-slate-800 hover:bg-amber-500/20 border border-slate-700 text-amber-400 font-black rounded-lg text-sm flex items-center justify-center transition cursor-pointer"
+            >
+              -
+            </button>
+            <button
+              title="Gesamtübersicht (Fit Bounds)"
+              onClick={() => {
+                if (window._leaflet_map && filteredSpots.length > 0) {
+                  const bounds = L.latLngBounds(filteredSpots.map(s => [s.lat, s.lon]));
+                  window._leaflet_map.fitBounds(bounds, { padding: [50, 50] });
+                }
+              }}
+              className="w-8 h-8 bg-slate-800 hover:bg-amber-500/20 border border-slate-700 text-amber-400 font-bold rounded-lg text-[10px] flex items-center justify-center transition cursor-pointer"
+            >
+              🗺️
+            </button>
+          </div>
         </div>
 
         <MapContainer
@@ -14345,7 +14393,12 @@ export default function App() {
           className="w-full h-full"
           zoomControl={false}
         >
-          <MapFlyTo center={selectedCity} showAll={showAllRegions || searchRadiusKm >= 200} spots={filteredSpots} />
+          <MapFlyTo
+            center={selectedCity}
+            showAll={showAllRegions || searchRadiusKm >= 200}
+            spots={filteredSpots}
+            selectedSpot={selectedSpot}
+          />
 
           <TileLayer
             key={mapLayer}
