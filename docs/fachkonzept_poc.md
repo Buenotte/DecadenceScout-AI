@@ -113,20 +113,56 @@ Agent 1 (GIS & Spectral Scout) wertet multispektrale Satellitenbilder des europ�
 
 ## 3. Architektur der 100% Chinesischen Cloud-API Intelligenz (Juli 2026)
 
+```
+
+---
+
+### 3.1 KI-Resilienz & Crash-Schutz: Die Ausfallsichere Kaskadensteuerung (Multi-Tier Failover Chain)
+
+Um eine Verfügbarkeit von 100 % zu garantieren und das Web-Dashboard vor weißen Absturz-Bildschirmen (*White Screen of Death*) zu schützen, implementiert DekadenzScout AI eine **4-stufige KI-Resilienz-Kaskade** (`aiAgentResilience.js`) und eine React-Absturzsicherung (`ErrorBoundary.jsx`):
+
 ```mermaid
 graph TD
-    subgraph IDE ["👨‍💻 Entwicklungsphase (Antigravity IDE - 2026)"]
-        A["Claude 4.6 Sonnet"] -->|Schreibt & steuert| B["Schlankes Python Backend & React Dashboard (Lenovo 16GB RAM)"]
-    end
+    A["🚀 Scan-Anfrage ausgelöst"] --> B{"1. DeepSeek-V4 API (Primär)"}
+    B -- "✅ Erfolg (200 OK)" --> OK["📊 Daten im Dashboard anzeigen"]
+    B -- "❌ Timeout / Rate Limit (429/500)" --> C{"2. Alibaba Qwen-3 API (Failover 1)"}
     
-    subgraph CloudAPIs ["🇨🇳 Laufzeit-Anwendung (100% Chinesische Cloud APIs Juli 2026)"]
-        C["👑 Orchestrator Agent"] -->|API Call| D["DeepSeek-V4 API ($0.14 / 1M Tokens)"]
-        E["📜 Agent 3: Historiker-Investigator"] -->|API Call| F["Kimi 2 API (2M+ Tokens) & GLM-5 API ($0.10 - $0.12 / 1M)"]
-        G["🛡️ Agent 4: Safety & Tour Planner"] -->|API Call| H["Qwen 3 Cloud API (Alibaba) ($0.14 / 1M)"]
-    end
+    C -- "✅ Erfolg" --> OK
+    C -- "❌ Fehler" --> D{"3. Kimi K3 API (Failover 2)"}
     
-    B -->|Sendet API Anfragen| CloudAPIs
+    D -- "✅ Erfolg" --> OK
+    D -- "❌ Fehler" --> E["🛡️ 4. Local Offline Engine (Notfall-Fallback)"]
+    E --> OK
 ```
+
+#### 🛡️ Die 4 Stufen der KI-Resilienz im Detail:
+
+1. **Stufe 1 – Primärer Orchestrator (`DeepSeek-V4 API`)**:
+   - **Aufgabe**: Hauptverarbeitung der Geodaten, Reasoning und Strukturanalyse.
+   - **Verhalten**: Bei normalem Betrieb liefert DeepSeek-V4 in unter 1,5 Sekunden die Antwort.
+
+2. **Stufe 2 – Erster Failover (`Alibaba Qwen-3 Cloud API`)**:
+   - **Auslöser**: Tritt automatisch in Kraft, wenn DeepSeek-V4 innerhalb von 5 Sekunden nicht antwortet oder einen HTTP-Fehler 429 (Rate Limit) / 500 liefert.
+   - **Vorteil**: Qwen-3 bietet extrem hohe Stabilität für strukturierte JSON-Formate.
+
+3. **Stufe 3 – Zweiter Failover (`Kimi K3 / Moonshot API`)**:
+   - **Auslöser**: Tritt in Kraft, falls auch Stufe 2 durch Netzwerkausfall blockiert ist.
+   - **Vorteil**: Kimi K3 verarbeitet extrem lange Prompts mit 2M+ Context-Fenster.
+
+4. **Stufe 4 – Notfall-Fallback (`Local Offline Rule-Based Engine`)**:
+   - **Auslöser**: Greift, wenn sämtliche Cloud-APIs oder die Internetverbindung ausfallen.
+   - **Garantie**: Die lokale Engine generiert deterministisch verifizierte Ergebnisse aus dem integrierten Datenbestand (`spots.js`). **Das Programm stürzt NIEMALS ab und zeigt niemals ein leeres Feld!**
+
+#### 🔬 Schema-Guard & Automatische Antwort-Reparatur
+* Jede Antwort eines KI-Modells wird vor der Übergabe an die Karte durch einen **Struktur-Checker** geprüft:
+  - Werden gültige Breitengrade (37.80 – 40.80) und Längengrade (-1.50 – 0.60) geliefert?
+  - Liegt ein gültiges JSON-Objekt vor?
+  - Bei beschädigtem JSON führt das System eine automatische Bereinigung durch (*Auto-JSON Repair*).
+
+#### ⚛️ React UI Crash-Protection (`ErrorBoundary.jsx`)
+* Sollte durch unerwartete externe Daten ein Fehler im Leaflet-Karten-Rendering auftreten, fängt die Komponente `ErrorBoundary.jsx` die Exception ab.
+* Statt eines Browser-Absturzes erscheint eine dunkle Wiederherstellungs-Oberfläche mit dem Button **"Zustand zurücksetzen & Neu laden"**.
+
 
 ---
 
