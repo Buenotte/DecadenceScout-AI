@@ -14376,7 +14376,7 @@ export default function App() {
             }}
             className="py-1.5 px-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-extrabold rounded-xl transition shrink-0 cursor-pointer"
           >
-            🗺️ Alle 12 Objekte anzeigen
+            🗺️ Alle {filteredSpots.length} Objekte anzeigen
           </button>
         </div>
 
