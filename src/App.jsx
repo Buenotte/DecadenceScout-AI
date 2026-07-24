@@ -116,6 +116,46 @@ function SpotImage({ spot, className, style }) {
 }
 
 
+// Helper to calculate exact town/pueblo or city for any spot on hover
+function getSpotTownOrCity(spot) {
+  if (!spot) return 'Comunitat Valenciana';
+
+  if (spot.name.includes('Aigües')) return 'Pueblo: Aigües de Busot';
+  if (spot.name.includes('Santa Eulalia') || spot.name.includes('Sax')) return 'Pueblo: Sax';
+  if (spot.name.includes('Lacy') || spot.name.includes('Elda')) return 'Pueblo: Elda / Petrer';
+  if (spot.name.includes('Jerica') || spot.name.includes('Jérica')) return 'Pueblo: Jérica';
+  if (spot.name.includes('Sueca')) return 'Ciudad: Sueca';
+  if (spot.name.includes('Agost')) return 'Pueblo: Agost';
+  if (spot.name.includes('Peñacerrada') || spot.name.includes('Mutxamel')) return 'Pueblo: Mutxamel';
+
+  // Extract parentheses if present e.g. "Name (City - Province)"
+  const match = spot.name.match(/\(([^)]+)\)/);
+  if (match && match[1]) {
+    const parts = match[1].split('-');
+    const cityCandidate = parts[0].trim();
+    if (cityCandidate && !cityCandidate.toLowerCase().includes('ruins')) {
+      return `Pueblo/Ort: ${cityCandidate}`;
+    }
+  }
+
+  // Find nearest major city/town from CITIES list
+  let nearestCity = CITIES[0];
+  let minDistance = 99999;
+  for (const c of CITIES) {
+    const dist = calculateDistance(c.lat, c.lon, spot.lat, spot.lon);
+    if (dist < minDistance) {
+      minDistance = dist;
+      nearestCity = c;
+    }
+  }
+
+  if (minDistance < 6) {
+    return `Ciudad/Ort: ${nearestCity.name}`;
+  } else {
+    return `Nahe Pueblo/Ort: ${nearestCity.name} (${minDistance.toFixed(1)} km)`;
+  }
+}
+
 // Auto-enricher function to guarantee rich historical text, clean categories, YouTube scripts and safety info for every spot
 function getEnrichedSpot(spot) {
   if (!spot) return null;
@@ -931,13 +971,20 @@ function AppContent() {
                 click: () => setSelectedSpot(spot)
               }}
             >
-              <Tooltip direction="top" offset={[0, -20]} opacity={0.95}>
-                <div className="flex flex-col gap-0.5 text-xs min-w-[150px]">
-                  <span className="font-bold text-slate-800 leading-tight">{spot.name}</span>
-                  <span className="text-[10px] text-amber-600 font-semibold">{spot.type}</span>
-                  <span className="text-[10px] text-slate-600 mt-1 pt-1 border-t border-slate-200/50">
-                    📍 Distanz (Calle Barcelona 3): <strong className="text-slate-800">{calculateDistance(HOME_LOCATION.lat, HOME_LOCATION.lon, spot.lat, spot.lon).toFixed(1)} km</strong>
-                  </span>
+              <Tooltip direction="top" offset={[0, -20]} opacity={0.97}>
+                <div className="flex flex-col gap-1 text-xs min-w-[170px] p-0.5">
+                  <div className="flex justify-between items-start gap-1 border-b border-slate-200 pb-1">
+                    <span className="font-extrabold text-slate-900 leading-tight">{spot.name}</span>
+                    <span className="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded shrink-0">{spot.province}</span>
+                  </div>
+                  <div className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1">
+                    🏙️ {getSpotTownOrCity(spot)}
+                  </div>
+                  <div className="text-[10px] text-amber-700 font-semibold">{spot.type === 'Ruins Ruine' ? 'Historische Ruine' : spot.type}</div>
+                  <div className="text-[10px] text-slate-600 pt-1 border-t border-slate-200/60 flex justify-between items-center">
+                    <span>📍 Ab Calle Barcelona 3:</span>
+                    <strong className="text-slate-900 font-bold">{calculateDistance(HOME_LOCATION.lat, HOME_LOCATION.lon, spot.lat, spot.lon).toFixed(1)} km</strong>
+                  </div>
                 </div>
               </Tooltip>
               <Popup>
