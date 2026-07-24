@@ -14125,7 +14125,7 @@ function AppContent() {
                         ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
                         : 'bg-orange-500/15 border-orange-500/30 text-orange-400'
                     }`}>
-                      {spot.status === 'KNOWN_HISTORIC_SITE' ? '✅ GPS verifiziert' : '⚠️ Demo-GPS – Satellit ausstehend'}
+                      {spot.status === 'KNOWN_HISTORIC_SITE' ? '✅ GPS verifiziert' : '⚠️ Koordinaten unbestätigt'}
                     </div>
                   </div>
                 </div>
