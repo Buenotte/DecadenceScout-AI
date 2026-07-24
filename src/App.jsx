@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import {
   Compass, Download, Cpu, History, MapPin, Sliders,
@@ -13774,6 +13774,8 @@ function MapFlyTo({ center, showAll, spots, selectedSpot }) {
 const RISK_COLOR = { NIEDRIG: 'text-emerald-400', MITTEL: 'text-amber-400', HOCH: 'text-red-400' };
 const RISK_BG   = { NIEDRIG: 'bg-emerald-500/20 border-emerald-500/30', MITTEL: 'bg-amber-500/20 border-amber-500/30', HOCH: 'bg-red-500/20 border-red-500/30' };
 
+const HOME_LOCATION = { lat: 38.3552821, lon: -0.4770499, name: 'Calle Barcelona 3, Alicante' };
+
 export default function App() {
   const [selectedCity, setSelectedCity]   = useState(CITIES[0]);
   const [searchRadiusKm, setRadius]       = useState(250);
@@ -14466,6 +14468,15 @@ export default function App() {
               icon={spot.status === 'UNCHARTED_NEW_DISCOVERY' ? unchartedIcon : knownIcon}
               eventHandlers={{ click: () => setSelectedSpot(spot) }}
             >
+              <Tooltip direction="top" offset={[0, -20]} opacity={0.95}>
+                <div className="flex flex-col gap-0.5 text-xs min-w-[150px]">
+                  <span className="font-bold text-slate-800 leading-tight">{spot.name}</span>
+                  <span className="text-[10px] text-amber-600 font-semibold">{spot.type}</span>
+                  <span className="text-[10px] text-slate-600 mt-1 pt-1 border-t border-slate-200/50">
+                    📍 Distanz (Calle Barcelona 3): <strong className="text-slate-800">{calculateDistance(HOME_LOCATION.lat, HOME_LOCATION.lon, spot.lat, spot.lon).toFixed(1)} km</strong>
+                  </span>
+                </div>
+              </Tooltip>
               <Popup>
                 <div style={{ minWidth: 240 }} className="p-1">
                   {spot.image && (
