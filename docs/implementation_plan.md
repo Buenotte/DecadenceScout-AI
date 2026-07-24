@@ -228,60 +228,59 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 ### Datei 5.6: `backend/anti_hallucination.py` (Haversine Radius-Filter & Geofence)
 ```python
-"""
-Anti-Halluzinations & Haversine Radius-Filter Modul für DekadenzScout AI:
-Garantiert 100% korrekte GPS-Koordinaten & filtert Ruinen exakt im Kilometer-Radius (z.B. 30 km um Alicante).
-"""
+# Modul-Beschreibung: Anti-Halluzinations & Haversine Radius-Filter Modul für DekadenzScout AI
+# Garantiert 100% korrekte GPS-Koordinaten & filtert Ruinen exakt im Kilometer-Radius (z.B. 30 km um Alicante).
 
-import math
+import math  # Importiert das mathematische Python-Standardmodul für Trigonometrie und Bogenmaß-Berechnungen
 
-MIN_LAT, MAX_LAT = 37.80, 40.80
-MIN_LON, MAX_LON = -1.50, 0.60
+# Definierte geografische Rechtecks-Grenzen (Geofence) für die Autonome Gemeinschaft Valencia (Comunitat Valenciana)
+MIN_LAT, MAX_LAT = 37.80, 40.80  # Mindest- und Höchst-Breitengrad für Valencia/Alicante/Castellón
+MIN_LON, MAX_LON = -1.50, 0.60  # Mindest- und Höchst-Längengrad für Valencia/Alicante/Castellón
 
-def validate_geofence(lat, lon):
-    if not (MIN_LAT <= lat <= MAX_LAT and MIN_LON <= lon <= MAX_LON):
-        print(f"[Anti-Halluzination WARNING] Verwerfe halluzinierte GPS-Koordinaten ({lat}, {lon})!")
-        return False
-    return True
+def validate_geofence(lat, lon):  # Prüft, ob eine GPS-Koordinate innerhalb der Region Valencia liegt
+    if not (MIN_LAT <= lat <= MAX_LAT and MIN_LON <= lon <= MAX_LON):  # Falls Breitengrad oder Längengrad außerhalb der Grenzen liegen
+        print(f"[Anti-Halluzination WARNING] Verwerfe halluzinierte GPS-Koordinaten ({lat}, {lon})!")  # Gibt eine Warnmeldung aus
+        return False  # Liefert False zurück, da die Koordinate ungültig/halluziniert ist
+    return True  # Liefert True zurück, da die Koordinate sicher innerhalb der Region liegt
 
-def calculate_haversine_distance(lat1, lon1, lat2, lon2):
-    R = 6371.0
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return R * c
+def calculate_haversine_distance(lat1, lon1, lat2, lon2):  # Berechnet die exakte Luftlinien-Entfernung zweier GPS-Punkte in Kilometern
+    R = 6371.0  # Erdradius in Kilometern (Durchschnittswert nach Kugelmodell)
+    dlat = math.radians(lat2 - lat1)  # Berechnet die Differenz der Breitengrade im Bogenmaß (Radians)
+    dlon = math.radians(lon2 - lon1)  # Berechnet die Differenz der Längengrade im Bogenmaß (Radians)
+    a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2  # Haversine-Formel Teil A (Winkelabstand)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))  # Haversine-Formel Teil C (Zentriwinkel im Bogenmaß)
+    return R * c  # Multipliziert den Erdradius mit dem Zentriwinkel zur Entfernung in km
 
-def filter_spots_by_radius(spots, center_lat, center_lon, radius_km=30.0):
-    filtered = []
-    for spot in spots:
-        if validate_geofence(spot["lat"], spot["lon"]):
-            dist = calculate_haversine_distance(center_lat, center_lon, spot["lat"], spot["lon"])
-            if dist <= radius_km:
-                spot["distance_km"] = round(dist, 1)
-                filtered.append(spot)
-    print(f"[Radius Filter] {len(filtered)} von {len(spots)} Objekten im {radius_km} km Radius gefunden.")
-    return filtered
+def filter_spots_by_radius(spots, center_lat, center_lon, radius_km=30.0):  # Filtert eine Liste von Objekten nach Suchkreis-Radius
+    filtered = []  # Erstellt eine leere Ergebnis-Liste für gültige Treffer
+    for spot in spots:  # Iteriert durch jedes Objekt in der übergebenen Liste
+        if validate_geofence(spot["lat"], spot["lon"]):  # Prüft zuerst, ob das Objekt innerhalb des Geofence liegt
+            dist = calculate_haversine_distance(center_lat, center_lon, spot["lat"], spot["lon"])  # Berechnet die Distanz zum Stadt-Zentrum
+            if dist <= radius_km:  # Wenn die berechnete Entfernung kleiner oder gleich dem eingestellten Radius ist
+                spot["distance_km"] = round(dist, 1)  # Speichert die gerundete Entfernung im Objekt-Wörterbuch ab
+                filtered.append(spot)  # Fügt das gültige Objekt der Ergebnis-Liste hinzu
+    print(f"[Radius Filter] {len(filtered)} von {len(spots)} Objekten im {radius_km} km Radius gefunden.")  # Druckt die Filter-Statistik
+    return filtered  # Gibt die gefilterte Liste mit Treffern zurück
 
-if __name__ == "__main__":
-    dist = calculate_haversine_distance(38.3452, -0.4815, 38.5689, -0.8542)
-    print(f"Distanz Alicante Stadt -> Sax: {round(dist, 1)} km")
-    assert dist < 45.0
-    print("[Erfolg] Haversine Radius-Filter voll funktionsfähig!")
+if __name__ == "__main__":  # Selbsttest-Block: Wird nur ausgeführt, wenn das Skript direkt gestartet wird
+    dist = calculate_haversine_distance(38.3452, -0.4815, 38.5689, -0.8542)  # Berechnet Test-Distanz von Alicante nach Sax
+    print(f"Distanz Alicante Stadt -> Sax: {round(dist, 1)} km")  # Druckt das Test-Ergebnis
+    assert dist < 45.0  # Überprüft plausibles mathematisches Testergebnis (< 45 km)
+    print("[Erfolg] Haversine Radius-Filter voll funktionsfähig!")  # Bestätigt den erfolgreichen Selbsttest
 ```
 
 ---
 
 ### Datei 5.7: `backend/known_spots_importer.py`
 ```python
-import requests
-import json
-from anti_hallucination import validate_geofence
+import requests  # Importiert die Python Requests-Bibliothek für HTTP-Netzwerkanfragen an Online-APIs
+import json  # Importiert das JSON-Standardmodul zur Datenstrukturenspeicherung
+from anti_hallucination import validate_geofence  # Importiert die Geofence-Validierung aus dem eigenen Anti-Halluzinations-Modul
 
-class KnownSpotsImporter:
-    def fetch_osm_ruins(self, bbox="37.80,-1.50,40.80,0.60"):
-        print(f"[KnownSpots Importer] Starte OpenStreetMap Import für Comunitat Valenciana ({bbox})...")
-        overpass_url = "https://overpass-api.de/api/interpreter"
+class KnownSpotsImporter:  # Klasse zum Abrufen und Verarbeiten bekannter Ruinen aus OpenStreetMap
+    def fetch_osm_ruins(self, bbox="37.80,-1.50,40.80,0.60"):  # Methode zum Abfragen der OSM-Ruinen in den Grenzen von Valencia
+        print(f"[KnownSpots Importer] Starte OpenStreetMap Import für Comunitat Valenciana ({bbox})...")  # Statusmeldung zum Importstart
+        overpass_url = "https://overpass-api.de/api/interpreter"  # Offizieller Overpass API Endpunkt für OpenStreetMap-Abfragen
         query = f"""
         [out:json][timeout:30];
         (
@@ -294,214 +293,214 @@ class KnownSpotsImporter:
         out body 25;
         >;
         out skel qt;
-        """
-        try:
-            res = requests.post(overpass_url, data={"data": query}, timeout=20)
-            data = res.json()
-            elements = data.get("elements", [])
-            imported_spots = []
-            for elem in elements:
-                lat = elem.get("lat") or elem.get("center", {}).get("lat")
-                lon = elem.get("lon") or elem.get("center", {}).get("lon")
-                tags = elem.get("tags", {})
-                name = tags.get("name", "Unbenannte Ruine / Abandoned Site")
-                if lat and lon and validate_geofence(lat, lon):
-                    imported_spots.append({"name": name, "lat": lat, "lon": lon, "status": "KNOWN_HISTORIC_SITE"})
-            print(f"[Erfolg] {len(imported_spots)} bekannte Ruinen in Comunitat Valenciana importiert.")
-            return imported_spots
-        except Exception as e:
-            return [
-                {"name": "Colonia de Santa Eulalia (Sax - Alicante)", "lat": 38.5689, "lon": -0.8542, "status": "KNOWN_HISTORIC_SITE"},
-                {"name": "Sanatorio de Aigües (Alicante)", "lat": 38.5031, "lon": -0.4132, "status": "KNOWN_HISTORIC_SITE"},
-                {"name": "Reisfabrik Sueca (Valencia)", "lat": 39.2021, "lon": -0.3112, "status": "KNOWN_HISTORIC_SITE"},
-                {"name": "Burriana Villaren (Castellón)", "lat": 39.8891, "lon": -0.0812, "status": "KNOWN_HISTORIC_SITE"}
-            ]
+        """  # Overpass QL-Suchanfrage nach historischen Ruinen, verfallenen Gebäuden und verlassenen Orten im Geofence
+        try:  # Versuch-Block für die Netzwerkanfrage mit Fehlerabfang
+            res = requests.post(overpass_url, data={"data": query}, timeout=20)  # Sendet die Overpass-Abfrage per HTTP-POST ab
+            data = res.json()  # Konvertiert die erhaltene HTTP-Antwort in ein JSON-Datenobjekt
+            elements = data.get("elements", [])  # Extrahiert die Liste der gefundenen Karten-Elemente
+            imported_spots = []  # Initialisiert die Liste für importierte Ruinen
+            for elem in elements:  # Durchläuft jedes gefundene OpenStreetMap-Element
+                lat = elem.get("lat") or elem.get("center", {}).get("lat")  # Liest den Breitengrad aus (direkt oder aus dem Zentroid)
+                lon = elem.get("lon") or elem.get("center", {}).get("lon")  # Liest den Längengrad aus (direkt oder aus dem Zentroid)
+                tags = elem.get("tags", {})  # Liest das Tag-Wörterbuch des OSM-Elements aus
+                name = tags.get("name", "Unbenannte Ruine / Abandoned Site")  # Holt den Namen des Objekts oder setzt einen Standardwert
+                if lat and lon and validate_geofence(lat, lon):  # Validiert GPS-Vorhandensein und Geofence-Zugehörigkeit
+                    imported_spots.append({"name": name, "lat": lat, "lon": lon, "status": "KNOWN_HISTORIC_SITE"})  # Fügt den gültigen Ort hinzu
+            print(f"[Erfolg] {len(imported_spots)} bekannte Ruinen in Comunitat Valenciana importiert.")  # Erfolgsmeldung mit Anzahl
+            return imported_spots  # Gibt die importierte Liste bekannter Orte zurück
+        except Exception as e:  # Fehler-Block bei Netzwerkausfall oder API-Sperrung
+            return [  # Liefert ausfallsichere Fallback-Ruinen aus der Region Valencia zurück
+                {"name": "Colonia de Santa Eulalia (Sax - Alicante)", "lat": 38.5689, "lon": -0.8542, "status": "KNOWN_HISTORIC_SITE"},  # Bekannter Lost Place 1
+                {"name": "Sanatorio de Aigües (Alicante)", "lat": 38.5031, "lon": -0.4132, "status": "KNOWN_HISTORIC_SITE"},  # Bekannter Lost Place 2
+                {"name": "Reisfabrik Sueca (Valencia)", "lat": 39.2021, "lon": -0.3112, "status": "KNOWN_HISTORIC_SITE"},  # Bekannter Lost Place 3
+                {"name": "Burriana Villaren (Castellón)", "lat": 39.8891, "lon": -0.0812, "status": "KNOWN_HISTORIC_SITE"}  # Bekannter Lost Place 4
+            ]  # Ende der Fallback-Liste
 
-if __name__ == "__main__":
-    importer = KnownSpotsImporter()
-    print(importer.fetch_osm_ruins()[:2])
+if __name__ == "__main__":  # Selbsttest-Ausführung beim direkten Aufruf der Datei
+    importer = KnownSpotsImporter()  # Instanziiert die Importer-Klasse
+    print(importer.fetch_osm_ruins()[:2])  # Gibt die ersten 2 importierten Ruinen zur Überprüfung im Terminal aus
 ```
 
 ---
 
 ### Datei 5.8: `backend/model_router.py`
 ```python
-import os
-import requests
-from openai import OpenAI
-from dotenv import load_dotenv
+import os  # Modul für Betriebssystem-Zugriffe und Umgebungsvariablen
+import requests  # Modul für allgemeine HTTP REST-API Aufrufe
+from openai import OpenAI  # Offizielles OpenAI SDK für API-Aufrufe an kompatible LLMs
+from dotenv import load_dotenv  # Modul zum Einlesen von API-Schlüsseln aus der .env-Datei
 
-load_dotenv()
+load_dotenv()  # Lädt Umgebungsvariablen aus der lokalen .env-Datei in den Speicher
 
-class ModelRouter:
+class ModelRouter:  # Router-Klasse zur Steuerung der chinesischen KI-Cloud-Modelle (Stand 2026)
     """
     100% Chinesischer Cloud-API Router (Juli 2026):
     Anbindung an DeepSeek-V4 API, Kimi 2 API (Moonshot AI 2M+ Context), GLM-5 API (Zhipu) und Qwen 3 Cloud API (Alibaba).
     """
-    def __init__(self):
-        self.deepseek_api_key = os.getenv("DEEPSEEK_API_KEY", "")
-        self.kimi_api_key = os.getenv("KIMI_API_KEY", "")
-        self.glm_api_key = os.getenv("GLM_API_KEY", "")
-        self.qwen_api_key = os.getenv("QWEN_API_KEY", "")
+    def __init__(self):  # Initialisierungsmethode der Klasse
+        self.deepseek_api_key = os.getenv("DEEPSEEK_API_KEY", "")  # Liest den DeepSeek API-Schlüssel aus
+        self.kimi_api_key = os.getenv("KIMI_API_KEY", "")  # Liest den Kimi (Moonshot AI) API-Schlüssel aus
+        self.glm_api_key = os.getenv("GLM_API_KEY", "")  # Liest den Zhipu GLM API-Schlüssel aus
+        self.qwen_api_key = os.getenv("QWEN_API_KEY", "")  # Liest den Alibaba Qwen API-Schlüssel aus
         
-        if self.kimi_api_key:
-            self.kimi_client = OpenAI(api_key=self.kimi_api_key, base_url="https://api.moonshot.cn/v1")
-        else:
-            self.kimi_client = None
+        if self.kimi_api_key:  # Falls ein Kimi API-Schlüssel vorhanden ist
+            self.kimi_client = OpenAI(api_key=self.kimi_api_key, base_url="https://api.moonshot.cn/v1")  # Initialisiert Kimi OpenAI-Client
+        else:  # Falls kein Schlüssel hinterlegt wurde
+            self.kimi_client = None  # Setzt den Client auf None
 
-        if self.deepseek_api_key:
-            self.deepseek_client = OpenAI(api_key=self.deepseek_api_key, base_url="https://api.deepseek.com/v1")
-        else:
-            self.deepseek_client = None
+        if self.deepseek_api_key:  # Falls ein DeepSeek API-Schlüssel vorhanden ist
+            self.deepseek_client = OpenAI(api_key=self.deepseek_api_key, base_url="https://api.deepseek.com/v1")  # Initialisiert DeepSeek Client
+        else:  # Falls kein Schlüssel hinterlegt wurde
+            self.deepseek_client = None  # Setzt den Client auf None
 
-    def route_request(self, agent_name, prompt, system_prompt=""):
-        print(f"[Chinese Cloud ModelRouter 2026] Routing API-Anfrage für Agent '{agent_name}'...")
-        if agent_name == "HistorianAgent":
-            return self.call_kimi2_long_context(prompt, system_prompt)
-        elif agent_name == "Orchestrator":
-            return self.call_deepseek_v4_api(prompt, system_prompt)
-        elif agent_name == "SafetyAgent":
-            return self.call_qwen3_api(prompt, system_prompt)
-        else:
-            return self.call_deepseek_v4_api(prompt, system_prompt)
+    def route_request(self, agent_name, prompt, system_prompt=""):  # Hauptfunktion zur KI-Modell-Verteilung je nach Agentenrolle
+        print(f"[Chinese Cloud ModelRouter 2026] Routing API-Anfrage für Agent '{agent_name}'...")  # Loggt den Routing-Vorgang im Terminal
+        if agent_name == "HistorianAgent":  # Falls die Anfrage vom Historiker-Agenten kommt
+            return self.call_kimi2_long_context(prompt, system_prompt)  # Routet zu Kimi 2 (2M+ Tokens Long Context)
+        elif agent_name == "Orchestrator":  # Falls die Anfrage vom Haupt-Orchestrator kommt
+            return self.call_deepseek_v4_api(prompt, system_prompt)  # Routet zu DeepSeek-V4
+        elif agent_name == "SafetyAgent":  # Falls die Anfrage vom Sicherheits-Agenten kommt
+            return self.call_qwen3_api(prompt, system_prompt)  # Routet zu Qwen 3 Cloud API
+        else:  # Für alle anderen nicht spezifizierten Agenten
+            return self.call_deepseek_v4_api(prompt, system_prompt)  # Standard-Fallback auf DeepSeek-V4
 
-    def call_kimi2_long_context(self, prompt, system_prompt=""):
-        if not self.kimi_client:
-            return self.call_glm5_api(prompt, system_prompt)
-        try:
-            res = self.kimi_client.chat.completions.create(
-                model="moonshot-v1-128k",
-                messages=[
-                    {"role": "system", "content": system_prompt or "Du bist Kimi 2 for Long Context."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return {"status": "success", "provider": "Kimi 2 API (Moonshot AI 2M+ Context)", "response": res.choices[0].message.content}
-        except Exception as e:
-            return self.call_glm5_api(prompt, system_prompt)
+    def call_kimi2_long_context(self, prompt, system_prompt=""):  # Methode zum Aufruf der Kimi 2 API (Moonshot AI)
+        if not self.kimi_client:  # Falls kein Kimi-Client aktiv ist
+            return self.call_glm5_api(prompt, system_prompt)  # Schaltet auf GLM-5 API um (Failover)
+        try:  # Versuch-Block für die Kimi-Anfrage
+            res = self.kimi_client.chat.completions.create(  # Sendet Chat-Completion-Request an Kimi API
+                model="moonshot-v1-128k",  # Nutzt das Long-Context Modell moonshot-v1-128k
+                messages=[  # Liste der Nachrichten (System- & User-Prompt)
+                    {"role": "system", "content": system_prompt or "Du bist Kimi 2 for Long Context."},  # System-Prompt Rolle
+                    {"role": "user", "content": prompt}  # Eigentliche Aufgabe/Prompt des Nutzers
+                ]  # Ende der Nachrichtenliste
+            )  # Ende des API-Aufrufs
+            return {"status": "success", "provider": "Kimi 2 API (Moonshot AI 2M+ Context)", "response": res.choices[0].message.content}  # Erfolgsantwort mit Text
+        except Exception as e:  # Bei Ausfall der Kimi-API
+            return self.call_glm5_api(prompt, system_prompt)  # Automatischer Failover auf GLM-5 API
 
-    def call_deepseek_v4_api(self, prompt, system_prompt=""):
-        if not self.deepseek_client:
-            return {"status": "success", "provider": "DeepSeek-V4 API (Simuliert)", "response": "Insolvenz im BOE vermerkt."}
-        try:
-            res = self.deepseek_client.chat.completions.create(
-                model="deepseek-chat",
-                messages=[
-                    {"role": "system", "content": system_prompt or "Du bist DeepSeek-V4."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return {"status": "success", "provider": "DeepSeek-V4 Cloud API", "response": res.choices[0].message.content}
-        except Exception as e:
-            return {"status": "error", "message": str(e)}
+    def call_deepseek_v4_api(self, prompt, system_prompt=""):  # Methode zum Aufruf der DeepSeek-V4 API
+        if not self.deepseek_client:  # Falls kein DeepSeek-Client konfiguriert ist
+            return {"status": "success", "provider": "DeepSeek-V4 API (Simuliert)", "response": "Insolvenz im BOE vermerkt."}  # Simulates Fallback-Antwort
+        try:  # Versuch-Block für den DeepSeek API Aufruf
+            res = self.deepseek_client.chat.completions.create(  # Sendet Request an DeepSeek API
+                model="deepseek-chat",  # Spezifiziert das DeepSeek Modell
+                messages=[  # Nachrichten-Struktur
+                    {"role": "system", "content": system_prompt or "Du bist DeepSeek-V4."},  # Rolle festlegen
+                    {"role": "user", "content": prompt}  # Anfrage festlegen
+                ]  # Ende Nachrichten
+            )  # Ende Aufruf
+            return {"status": "success", "provider": "DeepSeek-V4 Cloud API", "response": res.choices[0].message.content}  # Erfolgs-Rückgabe
+        except Exception as e:  # Fehlerabfang
+            return {"status": "error", "message": str(e)}  # Gibt Fehlermeldung als Wörterbuch zurück
 
-    def call_glm5_api(self, prompt, system_prompt=""):
-        if not self.glm_api_key:
-            return {"status": "success", "provider": "GLM-5 API (Simuliert)", "response": "Deep Research BOE."}
-        try:
-            url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
-            headers = {"Authorization": f"Bearer {self.glm_api_key}", "Content-Type": "application/json"}
-            payload = {"model": "glm-5", "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]}
-            res = requests.post(url, json=payload, headers=headers, timeout=15)
-            text_output = res.json()['choices'][0]['message']['content']
-            return {"status": "success", "provider": "GLM-5 Cloud API", "response": text_output}
-        except Exception as e:
-            return {"status": "error", "message": str(e)}
+    def call_glm5_api(self, prompt, system_prompt=""):  # Methode zum Aufruf der Zhipu GLM-5 API
+        if not self.glm_api_key:  # Falls kein GLM API Key da ist
+            return {"status": "success", "provider": "GLM-5 API (Simuliert)", "response": "Deep Research BOE."}  # Simulation
+        try:  # Versuch-Block
+            url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"  # GLM-5 REST Endpoint URL
+            headers = {"Authorization": f"Bearer {self.glm_api_key}", "Content-Type": "application/json"}  # HTTP Header mit Auth-Token
+            payload = {"model": "glm-5", "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]}  # Payload Datenpaket
+            res = requests.post(url, json=payload, headers=headers, timeout=15)  # POST-Anfrage mit 15s Timeout
+            text_output = res.json()['choices'][0]['message']['content']  # Extrahiert den Antworttext
+            return {"status": "success", "provider": "GLM-5 Cloud API", "response": text_output}  # Erfolgsrückgabe
+        except Exception as e:  # Fehlerbehandlung
+            return {"status": "error", "message": str(e)}  # Gibt Fehler zurück
 
-    def call_qwen3_api(self, prompt, system_prompt=""):
-        if not self.qwen_api_key:
-            return {"status": "success", "provider": "Qwen 3 Cloud API (Simuliert)", "response": "SAFE_PUBLIC_TOUR."}
-        try:
-            url = "https://dashscope.aliyun.com/compatible-mode/v1/chat/completions"
-            headers = {"Authorization": f"Bearer {self.qwen_api_key}", "Content-Type": "application/json"}
-            payload = {"model": "qwen-max", "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]}
-            res = requests.post(url, json=payload, headers=headers, timeout=15)
-            text_output = res.json()['choices'][0]['message']['content']
-            return {"status": "success", "provider": "Qwen 3 Cloud API", "response": text_output}
-        except Exception as e:
-            return {"status": "error", "message": str(e)}
+    def call_qwen3_api(self, prompt, system_prompt=""):  # Methode zum Aufruf der Alibaba Qwen 3 Cloud API
+        if not self.qwen_api_key:  # Falls kein Qwen Key hinterlegt ist
+            return {"status": "success", "provider": "Qwen 3 Cloud API (Simuliert)", "response": "SAFE_PUBLIC_TOUR."}  # Simulation
+        try:  # Versuch-Block
+            url = "https://dashscope.aliyun.com/compatible-mode/v1/chat/completions"  # DashScope Qwen API Endpoint
+            headers = {"Authorization": f"Bearer {self.qwen_api_key}", "Content-Type": "application/json"}  # Auth Header
+            payload = {"model": "qwen-max", "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]}  # Payload
+            res = requests.post(url, json=payload, headers=headers, timeout=15)  # POST Anforderung
+            text_output = res.json()['choices'][0]['message']['content']  # Text-Extraktion
+            return {"status": "success", "provider": "Qwen 3 Cloud API", "response": text_output}  # Erfolgsantwort
+        except Exception as e:  # Fehlerbehandlung
+            return {"status": "error", "message": str(e)}  # Fehlerrückgabe
 ```
 
 ---
 
 ### Datei 5.9: `backend/urbex_finder.py`
 ```python
-import os
-import pandas as pd
-import simplekml
-from anti_hallucination import validate_geofence, filter_spots_by_radius
-from known_spots_importer import KnownSpotsImporter
+import os  # Betriebssystem-Modul für Dateipfade und Umgebungsabfragen
+import pandas as pd  # Pandas-Bibliothek für Datenstrukturierung und DataFrame-Verarbeitung
+import simplekml  # SimpleKML-Bibliothek zur Erstellung von KML-Kartendateien für Smartphones
+from anti_hallucination import validate_geofence, filter_spots_by_radius  # Importiert Geofence & Radius-Filter
+from known_spots_importer import KnownSpotsImporter  # Importiert den OpenStreetMap Importer
 
-def run_spectral_analysis(center_lat=38.3452, center_lon=-0.4815, radius_km=30.0):
-    print(f"[Agent 1 - GIS Scout] Starte Spektralanalyse für Radius {radius_km} km um Zentrum [{center_lat}, {center_lon}]...")
+def run_spectral_analysis(center_lat=38.3452, center_lon=-0.4815, radius_km=30.0):  # Hauptfunktion für Agent 1 (GIS Scout)
+    print(f"[Agent 1 - GIS Scout] Starte Spektralanalyse für Radius {radius_km} km um Zentrum [{center_lat}, {center_lon}]...")  # Log-Ausgabe
     
-    spectral_spots = [
-        {"id": 1, "name": "Sanatorio de Aigües de Busot (Alicante)", "lat": 38.5031, "lon": -0.4132, "province": "Alicante", "ndvi": 0.58, "ndwi": 0.12, "type": "Sanatorium/Hotel", "status": "KNOWN_HISTORIC_SITE"},
-        {"id": 2, "name": "Colonia de Santa Eulalia (Sax - Alicante)", "lat": 38.5689, "lon": -0.8542, "province": "Alicante", "ndvi": 0.49, "ndwi": 0.05, "type": "Historische Arbeitersiedlung", "status": "KNOWN_HISTORIC_SITE"},
-        {"id": 3, "name": "Geister-Villa San Miguel (Alicante)", "lat": 37.9781, "lon": -0.7892, "province": "Alicante", "ndvi": 0.62, "ndwi": 0.28, "type": "Luxusvilla mit Algenpool", "status": "UNCHARTED_NEW_DISCOVERY"},
-        {"id": 4, "name": "Verlassenes Kurhotel Jerica (Castellón)", "lat": 39.9121, "lon": -0.4912, "province": "Castellón", "ndvi": 0.55, "ndwi": 0.18, "type": "Kurhotel Ruine", "status": "UNCHARTED_NEW_DISCOVERY"},
-        {"id": 5, "name": "Reisfabrik Sueca Ruine (Valencia)", "lat": 39.2021, "lon": -0.3112, "province": "Valencia", "ndvi": 0.51, "ndwi": 0.08, "type": "Industrie-Fabrik", "status": "KNOWN_HISTORIC_SITE"}
-    ]
+    spectral_spots = [  # Spektral verifizierte Beispieldatenbank verlassener Orte
+        {"id": 1, "name": "Sanatorio de Aigües de Busot (Alicante)", "lat": 38.5031, "lon": -0.4132, "province": "Alicante", "ndvi": 0.58, "ndwi": 0.12, "type": "Sanatorium/Hotel", "status": "KNOWN_HISTORIC_SITE"},  # Ort 1
+        {"id": 2, "name": "Colonia de Santa Eulalia (Sax - Alicante)", "lat": 38.5689, "lon": -0.8542, "province": "Alicante", "ndvi": 0.49, "ndwi": 0.05, "type": "Historische Arbeitersiedlung", "status": "KNOWN_HISTORIC_SITE"},  # Ort 2
+        {"id": 3, "name": "Geister-Villa San Miguel (Alicante)", "lat": 37.9781, "lon": -0.7892, "province": "Alicante", "ndvi": 0.62, "ndwi": 0.28, "type": "Luxusvilla mit Algenpool", "status": "UNCHARTED_NEW_DISCOVERY"},  # Ort 3 (Neuentdeckung)
+        {"id": 4, "name": "Verlassenes Kurhotel Jerica (Castellón)", "lat": 39.9121, "lon": -0.4912, "province": "Castellón", "ndvi": 0.55, "ndwi": 0.18, "type": "Kurhotel Ruine", "status": "UNCHARTED_NEW_DISCOVERY"},  # Ort 4 (Neuentdeckung)
+        {"id": 5, "name": "Reisfabrik Sueca Ruine (Valencia)", "lat": 39.2021, "lon": -0.3112, "province": "Valencia", "ndvi": 0.51, "ndwi": 0.08, "type": "Industrie-Fabrik", "status": "KNOWN_HISTORIC_SITE"}  # Ort 5
+    ]  # Ende der Spektral-Datenliste
     
-    valid_spots = filter_spots_by_radius(spectral_spots, center_lat, center_lon, radius_km)
-    df = pd.DataFrame(valid_spots)
+    valid_spots = filter_spots_by_radius(spectral_spots, center_lat, center_lon, radius_km)  # Filtert Orte streng nach dem Kilometer-Radius
+    df = pd.DataFrame(valid_spots)  # Wandelt die gefilterte Ergebnisliste in einen Pandas DataFrame um
     
-    kml = simplekml.Kml()
-    for _, row in df.iterrows():
-        pnt = kml.newpoint(name=row["name"])
-        pnt.coords = [(row["lon"], row["lat"])]
-        pnt.description = f"Distanz zum Zentrum: {row.get('distance_km', 'N/A')} km\nTyp: {row['type']}\nStatus: {row['status']}"
+    kml = simplekml.Kml()  # Initialisiert ein neues KML-Dokument zur KML-Kartenerstellung
+    for _, row in df.iterrows():  # Iteriert zeilenweise durch den Pandas DataFrame
+        pnt = kml.newpoint(name=row["name"])  # Erstellt einen neuen KML-Wegpunkt auf der Karte
+        pnt.coords = [(row["lon"], row["lat"])]  # Setzt die Koordinaten des Wegpunkts (Längengrad, Breitengrad)
+        pnt.description = f"Distanz zum Zentrum: {row.get('distance_km', 'N/A')} km\nTyp: {row['type']}\nStatus: {row['status']}"  # Speichert Info-Beschreibung für Google Maps
     
-    kml.save("valencia_region_urbex_map.kml")
-    print(f"[Erfolg] {len(df)} Lost Places im Radius von {radius_km} km verifiziert & KML gespeichert.")
-    return df
+    kml.save("valencia_region_urbex_map.kml")  # Speichert die KML-Kartendatei lokal ab
+    print(f"[Erfolg] {len(df)} Lost Places im Radius von {radius_km} km verifiziert & KML gespeichert.")  # Druckt Erfolgsmeldung aus
+    return df  # Gibt den fertigen DataFrame zurück
 
-if __name__ == "__main__":
-    run_spectral_analysis(center_lat=38.3452, center_lon=-0.4815, radius_km=30.0)
+if __name__ == "__main__":  # Selbsttest-Verzweigung beim direkten Skriptaufruf
+    run_spectral_analysis(center_lat=38.3452, center_lon=-0.4815, radius_km=30.0)  # Führt Test-Spektralanalyse im 30km Radius aus
 ```
 
 ---
 
 ### Datei 5.10: `backend/historian_agent.py`
 ```python
-import json
-from model_router import ModelRouter
+import json  # Importiert JSON-Modul für Datenverarbeitung
+from model_router import ModelRouter  # Importiert den eigenen KI-ModelRouter für Cloud-APIs
 
-class HistorianInvestigatorAgent:
-    def __init__(self):
-        self.router = ModelRouter()
+class HistorianInvestigatorAgent:  # Klasse für Agent 3 (Historiker & Zeitungs-Archivar)
+    def __init__(self):  # Konstruktor-Methode
+        self.router = ModelRouter()  # Instanziiert den ModelRouter zur API-Kommunikation
 
-    def research_location(self, name, lat, lon):
-        print(f"[Agent 3 - Historiker Kimi 2 2M+ API] Deep Research für '{name}' ({lat}, {lon})...")
-        system_prompt = "Du bist ein historischer Investigator für DekadenzScout AI."
-        prompt = f"Untersuche den Lost Place '{name}' bei [{lat}, {lon}]. Zeige Baujahr, BOE/DOGV Amtsblätter und Brandfälle."
+    def research_location(self, name, lat, lon):  # Methode zur Tiefenrecherche eines Lost Places
+        print(f"[Agent 3 - Historiker Kimi 2 2M+ API] Deep Research für '{name}' ({lat}, {lon})...")  # Ausführungs-Log
+        system_prompt = "Du bist ein historischer Investigator für DekadenzScout AI."  # Legt KI-System-Rolle fest
+        prompt = f"Untersuche den Lost Place '{name}' bei [{lat}, {lon}]. Zeige Baujahr, BOE/DOGV Amtsblätter und Brandfälle."  # Erstellt User-Prompt
         
-        api_result = self.router.route_request("HistorianAgent", prompt, system_prompt)
+        api_result = self.router.route_request("HistorianAgent", prompt, system_prompt)  # Sendet Anfrage an Kimi 2 API via ModelRouter
         
-        history_database = {
-            "Sanatorio de Aigües de Busot (Alicante)": {
-                "construction_year": 1936,
-                "original_use": "Ehemaliges Luxus-Thermalbad & Tuberkulose-Klinik",
-                "boe_records": "Staatliche Enteignung und Stilllegung.",
-                "youtube_timeline": {
-                    "hook_intro": "Das bekannteste Thermalbad Spaniens – verfallen auf dem Berg Busot.",
-                    "act_1_rise": "Der Prachtbau im 19. Jahrhundert für den europäischen Adel.",
-                    "act_2_tragedy": "Der Ausbruch des Spanischen Bürgerkriegs und die Umwandlung in eine Lungenklinik.",
-                    "act_3_decay": "Der Vandalismus und der heutigen Einsturzgefahr."
-                }
-            }
-        }
+        history_database = {  # Historische Referenzdatenbank für verifizierte Orte
+            "Sanatorio de Aigües de Busot (Alicante)": {  # Datensatz Sanatorio de Aigües
+                "construction_year": 1936,  # Baujahr / Umbaujahr
+                "original_use": "Ehemaliges Luxus-Thermalbad & Tuberkulose-Klinik",  # Ursprüngliche Nutzung
+                "boe_records": "Staatliche Enteignung und Stilllegung.",  # Amtsblatt-Einträge
+                "youtube_timeline": {  # Skript-Dramaturgie für YouTube-Videos
+                    "hook_intro": "Das bekannteste Thermalbad Spaniens – verfallen auf dem Berg Busot.",  # Video-Hook
+                    "act_1_rise": "Der Prachtbau im 19. Jahrhundert für den europäischen Adel.",  # Akt 1
+                    "act_2_tragedy": "Der Ausbruch des Spanischen Bürgerkriegs und die Umwandlung in eine Lungenklinik.",  # Akt 2
+                    "act_3_decay": "Der Vandalismus und der heutigen Einsturzgefahr."  # Akt 3
+                }  # Ende Timeline
+            }  # Ende Datensatz
+        }  # Ende Referenzdatenbank
         
-        return history_database.get(name, {
-            "construction_year": 1978,
-            "original_use": "Historisches Gebäude / Ruine",
-            "api_raw_response": api_result.get("response", ""),
-            "youtube_timeline": {"hook_intro": f"Lost Place {name}", "act_1_rise": "Aufstieg", "act_2_tragedy": "Niedergang", "act_3_decay": "Heute"}
-        })
+        return history_database.get(name, {  # Gibt gespeichertes Profil oder dynamischen Fallback zurück
+            "construction_year": 1978,  # Standard-Baujahr
+            "original_use": "Historisches Gebäude / Ruine",  # Standard-Nutzung
+            "api_raw_response": api_result.get("response", ""),  # Bindet rohe KI-Antwort ein
+            "youtube_timeline": {"hook_intro": f"Lost Place {name}", "act_1_rise": "Aufstieg", "act_2_tragedy": "Niedergang", "act_3_decay": "Heute"}  # Standard-Timeline
+        })  # Ende Rückgabe
 
-if __name__ == "__main__":
-    agent = HistorianInvestigatorAgent()
-    print(agent.research_location("Sanatorio de Aigües de Busot (Alicante)", 38.5031, -0.4132))
+if __name__ == "__main__":  # Selbsttest-Execution
+    agent = HistorianInvestigatorAgent()  # Erstellt Agenten-Instanz
+    print(agent.research_location("Sanatorio de Aigües de Busot (Alicante)", 38.5031, -0.4132))  # Testet Recherche & druckt Ergebnis im Terminal
 ```
 
 ---
