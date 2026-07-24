@@ -767,17 +767,30 @@ function AppContent() {
 
 
               {activeTab === 'youtube' && (spotDetails?.youtube_script || selectedSpot.youtube_script) && (
-                <div className="space-y-1.5 text-[10px]">
-                  <div className="text-amber-400 font-bold flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> YouTube 3-Akt Dramaturgie
+                <div className="space-y-2 text-[10px]">
+                  <div className="flex justify-between items-center border-b border-slate-800 pb-1">
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5" /> 🤖 YouTube Script Agent (DeepSeek-V4 & Kimi K3)
+                    </span>
+                    <button
+                      onClick={() => {
+                        const scr = spotDetails?.youtube_script || selectedSpot.youtube_script;
+                        const text = `YOUTUBE SKRIPT: ${spotDetails?.name || selectedSpot.name}\nHOOK: ${scr.hook}\nAKT 1: ${scr.act1}\nAKT 2: ${scr.act2}\nAKT 3: ${scr.act3}`;
+                        navigator.clipboard.writeText(text);
+                        addToast({ title: '📋 Skript kopiert', message: 'YouTube Skript in die Zwischenablage kopiert!', type: 'success' });
+                      }}
+                      className="px-2 py-0.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold rounded text-[9px] transition"
+                    >
+                      📋 Skript kopieren
+                    </button>
                   </div>
-                  <div className="bg-slate-950 p-2 rounded border border-amber-500/20 text-amber-300 font-medium">
-                    🎬 <span className="font-bold">HOOK:</span> "{(spotDetails?.youtube_script || selectedSpot.youtube_script).hook}"
+                  <div className="bg-slate-950 p-2.5 rounded-lg border border-amber-500/25 text-amber-300 font-semibold shadow-inner">
+                    🎬 <span className="font-bold text-amber-400">HOOK (Erste 5 Sekunden):</span> "{(spotDetails?.youtube_script || selectedSpot.youtube_script).hook}"
                   </div>
-                  <div className="text-slate-400 space-y-1 text-[9px] pt-1">
-                    <div><span className="text-emerald-400 font-bold">Akt 1 (Aufstieg):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act1}</div>
-                    <div><span className="text-amber-400 font-bold">Akt 2 (Tragödie):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act2}</div>
-                    <div><span className="text-slate-300 font-bold">Akt 3 (Heute):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act3}</div>
+                  <div className="text-slate-300 space-y-1.5 text-[10px] pt-1 bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+                    <div><span className="text-emerald-400 font-bold">🟢 Akt 1 (Aufstieg & Blütezeit):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act1}</div>
+                    <div><span className="text-amber-400 font-bold">🟡 Akt 2 (Tragödie & Niedergang):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act2}</div>
+                    <div><span className="text-slate-300 font-bold">⚪ Akt 3 (Heutiger Lost Place):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act3}</div>
                   </div>
                 </div>
               )}
