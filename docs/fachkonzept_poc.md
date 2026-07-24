@@ -85,6 +85,32 @@ Wenn Sie unterwegs im Auto in den Provinzen Alicante, Valencia oder Castellón r
 
 ---
 
+### 2.3 Spektrale Indikatoren im Detail: NDVI (Pflanzenwuchs) & NDWI (Algenpools)
+
+Agent 1 (GIS & Spectral Scout) wertet multispektrale Satellitenbilder des europäischen **Sentinel-2 Satelliten** aus. Da Satellitenbilder nicht als Fließtext, sondern als physikalische Reflexionswerte vorliegen, berechnet das System zwei mathematische Indizes mit **0 KI-Tokens / 0 € Kosten**:
+
+#### 🌿 1. NDVI (Normalized Difference Vegetation Index – Pflanzenwuchs auf Dächern)
+* **Ziel**: Erkennung von eingestürzten Dächern, durch die Bäume, Sträucher oder Moos im Gebäudeinneren wachsen.
+* **Mathematische Formel**:
+  $$\text{NDVI} = \frac{\text{Band 8 (Nahes Infrarot - NIR)} - \text{Band 4 (Rot)}}{\text{Band 8 (Nahes Infrarot - NIR)} + \text{Band 4 (Rot)}}$$
+* **Wertebereich & Interpretation**:
+  * `NDVI < 0.20`: Intaktes Beton- / Ziegeldach (kein Bewuchs).
+  * `NDVI 0.40 bis 0.70`: **Starker Pflanzenbewuchs auf der Gebäudefläche** ➔ Hohe Wahrscheinlichkeit für Dacheinsturz und Verfall (Ruine).
+
+#### 🏊 2. NDWI (Normalized Difference Water Index – Veralgte Algenpools & Feuchtigkeit)
+* **Ziel**: Erkennung von stehendem, unbehandeltem Wasser (z. B. veralgte Swimmingspools verlassener Villen oder feuchte Gebäudesubstanz).
+* **Mathematische Formel**:
+  $$\text{NDWI} = \frac{\text{Band 3 (Grün)} - \text{Band 8 (Nahes Infrarot - NIR)}}{\text{Band 3 (Grün)} + \text{Band 8 (Nahes Infrarot - NIR)}}$$
+* **Wertebereich & Interpretation**:
+  * `NDWI < 0.00`: Trockenes Areal / normales Gebäude.
+  * `NDWI 0.05 bis 0.35`: **Stehende Wasserfläche mit Veralgung** ➔ Typisches Signal für verlassene Luxusvillen mit ungepflegtem Pool.
+
+#### 🎯 3. Geografische Auflösung & Grenzen (Sentinel-2 Spatial Resolution)
+* **Pixelauflösung**: Sentinel-2 besitzt in den Farbbändern B3, B4 und B8 eine physikalische Pixelauflösung von **10 Meter × 10 Meter pro Pixel**.
+* **Einsatzbereich**: Ausgezeichnete Trefferquote bei Industriearealen, Fabriken, Burgen, Sanatorien, Gutshöfen und Villengrundstücken (> 100 m²). Bei Kleinstobjekten (< 10 m²) dient der Wert als Indikator für das unmittelbare Umfeld.
+
+---
+
 ## 3. Architektur der 100% Chinesischen Cloud-API Intelligenz (Juli 2026)
 
 ```mermaid
