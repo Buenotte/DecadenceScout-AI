@@ -14489,22 +14489,18 @@ function AppContent() {
               position={[spot.lat, spot.lon]}
               icon={spot.status === 'UNCHARTED_NEW_DISCOVERY' ? unchartedIcon : knownIcon}
               eventHandlers={{
-                click: () => setSelectedSpot(spot),
-                mouseover: () => setHoveredSpot(spot),
-                mouseout: () => setHoveredSpot(null)
+                click: () => setSelectedSpot(spot)
               }}
             >
-              {hoveredSpot?.id === spot.id && (
-                <Tooltip direction="top" offset={[0, -20]} opacity={0.95} permanent>
-                  <div className="flex flex-col gap-0.5 text-xs min-w-[150px]">
-                    <span className="font-bold text-slate-800 leading-tight">{spot.name}</span>
-                    <span className="text-[10px] text-amber-600 font-semibold">{spot.type}</span>
-                    <span className="text-[10px] text-slate-600 mt-1 pt-1 border-t border-slate-200/50">
-                      📍 Distanz (Calle Barcelona 3): <strong className="text-slate-800">{calculateDistance(HOME_LOCATION.lat, HOME_LOCATION.lon, spot.lat, spot.lon).toFixed(1)} km</strong>
-                    </span>
-                  </div>
-                </Tooltip>
-              )}
+              <Tooltip direction="top" offset={[0, -20]} opacity={0.95}>
+                <div className="flex flex-col gap-0.5 text-xs min-w-[150px]">
+                  <span className="font-bold text-slate-800 leading-tight">{spot.name}</span>
+                  <span className="text-[10px] text-amber-600 font-semibold">{spot.type}</span>
+                  <span className="text-[10px] text-slate-600 mt-1 pt-1 border-t border-slate-200/50">
+                    📍 Distanz (Calle Barcelona 3): <strong className="text-slate-800">{calculateDistance(HOME_LOCATION.lat, HOME_LOCATION.lon, spot.lat, spot.lon).toFixed(1)} km</strong>
+                  </span>
+                </div>
+              </Tooltip>
               <Popup>
                 <div style={{ minWidth: 240 }} className="p-1">
                   {spot.image && (
