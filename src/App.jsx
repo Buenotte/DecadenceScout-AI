@@ -230,6 +230,9 @@ function AppContent() {
   const [researchingHistory, setResearchingHistory] = useState(false);
   const [customHistories, setCustomHistories]       = useState({});
 
+  const [scriptViewMode, setScriptViewMode]   = useState('text'); // 'text' (Fließtext zum Vorlesen) vs 'structure' (3-Akt)
+  const [showTeleprompter, setShowTeleprompter] = useState(false);
+
   const handleDeepHistoryResearch = (spot) => {
     if (!spot) return;
     setResearchingHistory(true);
@@ -766,34 +769,66 @@ function AppContent() {
               )}
 
 
-              {activeTab === 'youtube' && (spotDetails?.youtube_script || selectedSpot.youtube_script) && (
-                <div className="space-y-2 text-[10px]">
-                  <div className="flex justify-between items-center border-b border-slate-800 pb-1">
-                    <span className="text-amber-400 font-bold flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5" /> 🤖 YouTube Script Agent (DeepSeek-V4 & Kimi K3)
-                    </span>
-                    <button
-                      onClick={() => {
-                        const scr = spotDetails?.youtube_script || selectedSpot.youtube_script;
-                        const text = `YOUTUBE SKRIPT: ${spotDetails?.name || selectedSpot.name}\nHOOK: ${scr.hook}\nAKT 1: ${scr.act1}\nAKT 2: ${scr.act2}\nAKT 3: ${scr.act3}`;
-                        navigator.clipboard.writeText(text);
-                        addToast({ title: '📋 Skript kopiert', message: 'YouTube Skript in die Zwischenablage kopiert!', type: 'success' });
-                      }}
-                      className="px-2 py-0.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold rounded text-[9px] transition"
-                    >
-                      📋 Skript kopieren
-                    </button>
+              {activeTab === 'youtube' && (spotDetails?.youtube_script || selectedSpot.youtube_script) && (() => {
+                const scr = spotDetails?.youtube_script || selectedSpot.youtube_script;
+                const spotName = spotDetails?.name || selectedSpot.name;
+                const fullSpeechText = `"${scr.hook} ${scr.act1} ${scr.act2} ${scr.act3}"`;
+
+                return (
+                  <div className="space-y-2 text-[10px]">
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-1.5 gap-1">
+                      <span className="text-amber-400 font-bold flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5" /> 🤖 YouTube Script Agent
+                      </span>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => setScriptViewMode(scriptViewMode === 'text' ? 'structure' : 'text')}
+                          className="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 font-bold rounded text-[9px] transition"
+                        >
+                          {scriptViewMode === 'text' ? '🎬 3-Akt Struktur' : '📖 Fließtext Modus'}
+                        </button>
+                        <button
+                          onClick={() => setShowTeleprompter(true)}
+                          className="px-2 py-0.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold rounded text-[9px] transition flex items-center gap-1"
+                        >
+                          📱 Teleprompter
+                        </button>
+                      </div>
+                    </div>
+
+                    {scriptViewMode === 'text' ? (
+                      <div className="bg-slate-950 p-3 rounded-xl border border-amber-500/30 space-y-2">
+                        <div className="flex justify-between items-center text-amber-400 font-bold border-b border-slate-800 pb-1 text-[10px]">
+                          <span>🎙️ Vollständiger Sprechtext zum Vorlesen:</span>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(fullSpeechText);
+                              addToast({ title: '📋 Text kopiert', message: 'Sprechtext in die Zwischenablage kopiert!', type: 'success' });
+                            }}
+                            className="text-[9px] text-amber-300 underline font-semibold"
+                          >
+                            📋 Text kopieren
+                          </button>
+                        </div>
+                        <p className="text-slate-100 leading-relaxed text-[11px] font-sans pt-1">
+                          {fullSpeechText}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <div className="bg-slate-950 p-2.5 rounded-lg border border-amber-500/25 text-amber-300 font-semibold shadow-inner">
+                          🎬 <span className="font-bold text-amber-400">HOOK:</span> "{scr.hook}"
+                        </div>
+                        <div className="text-slate-300 space-y-1.5 text-[10px] pt-1 bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+                          <div><span className="text-emerald-400 font-bold">🟢 Akt 1 (Blütezeit):</span> {scr.act1}</div>
+                          <div><span className="text-amber-400 font-bold">🟡 Akt 2 (Niedergang):</span> {scr.act2}</div>
+                          <div><span className="text-slate-300 font-bold">⚪ Akt 3 (Gegenwart):</span> {scr.act3}</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="bg-slate-950 p-2.5 rounded-lg border border-amber-500/25 text-amber-300 font-semibold shadow-inner">
-                    🎬 <span className="font-bold text-amber-400">HOOK (Erste 5 Sekunden):</span> "{(spotDetails?.youtube_script || selectedSpot.youtube_script).hook}"
-                  </div>
-                  <div className="text-slate-300 space-y-1.5 text-[10px] pt-1 bg-slate-950/60 p-2 rounded-lg border border-slate-800">
-                    <div><span className="text-emerald-400 font-bold">🟢 Akt 1 (Aufstieg & Blütezeit):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act1}</div>
-                    <div><span className="text-amber-400 font-bold">🟡 Akt 2 (Tragödie & Niedergang):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act2}</div>
-                    <div><span className="text-slate-300 font-bold">⚪ Akt 3 (Heutiger Lost Place):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act3}</div>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {activeTab === 'safety' && (spotDetails?.safety_info || selectedSpot.safety_info) && (
                 <div className="space-y-1.5 text-[10px]">
@@ -1034,6 +1069,55 @@ function AppContent() {
 
       {/* Toast Notification Container */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      {/* Fullscreen Teleprompter Reading Modal */}
+      {showTeleprompter && spotDetails && (() => {
+        const scr = spotDetails.youtube_script || {};
+        const fullText = `"${scr.hook || ''} ${scr.act1 || ''} ${scr.act2 || ''} ${scr.act3 || ''}"`;
+        return (
+          <div className="fixed inset-0 z-[5000] bg-slate-950/95 backdrop-blur-2xl p-6 flex flex-col justify-between items-center text-center">
+            <div className="w-full max-w-2xl flex justify-between items-center border-b border-amber-500/30 pb-3">
+              <div>
+                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
+                  🎙️ Teleprompter / Sprechtext Lesemodus
+                </h2>
+                <span className="text-xs text-slate-400">{spotDetails.name} · {spotDetails.province}</span>
+              </div>
+              <button
+                onClick={() => setShowTeleprompter(false)}
+                className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-xl font-bold text-xs"
+              >
+                ✕ Schließen
+              </button>
+            </div>
+
+            <div className="w-full max-w-2xl my-auto p-6 bg-slate-900/90 rounded-2xl border border-amber-500/40 shadow-2xl space-y-4">
+              <div className="text-xs font-bold text-amber-400 uppercase tracking-widest">Sprechtext (Fließtext zum Ablesen vor der Kamera):</div>
+              <p className="text-slate-100 text-lg md:text-xl font-medium leading-relaxed font-sans text-left">
+                {fullText}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(fullText);
+                  addToast({ title: '📋 Text kopiert', message: 'Fließtext in Zwischenablage kopiert!', type: 'success' });
+                }}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs transition shadow-lg flex items-center gap-2"
+              >
+                📋 Vollständigen Text kopieren
+              </button>
+              <button
+                onClick={() => setShowTeleprompter(false)}
+                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs transition"
+              >
+                Fertig / Zurück zur Karte
+              </button>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
