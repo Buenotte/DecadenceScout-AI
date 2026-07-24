@@ -3,7 +3,7 @@
 **Projektname**: DekadenzScout AI (International: DecadenceScout AI / TerraGhost AI)  
 **Zielregion**: Autonome Gemeinschaft Valencia / Comunitat Valenciana (Provinzen Alicante, Valencia & Castellón, Spanien)  
 **Dokumententyp**: Fachkonzept & Systemspezifikation (Proof of Concept)  
-**Version**: 4.6 (Erweitert um detaillierte KML-Smartphone-Funktionsweise & Schritt-für-Schritt Mobile-Navigation)  
+**Version**: 4.7 (Erweitert um Kategorie-Filterung, ESRI Satelliten-Engine, Live-Distanz-Matrix & KI-Resilienz-Architektur)  
 
 ---
 
@@ -19,10 +19,11 @@ Entwicklung eines kosteneffizienten und skalierten Systems mit 100 % chinesische
 4. **Multi-Datenbank-Architektur & KML Smartphone Export**: Nutzung staatlicher Geodatenbanken (GEE, Kataster, OSM), historischer Zeitungsarchive (Hemeroteca BNE, BOE, DOGV) und Erzeugung digitaler KML-Schatzkarten für direkte 1-Klick-Navigation auf Smartphones.
 5. **Erkennung von Neuentdeckungen (`UNCHARTED_NEW_DISCOVERY`)**: Automatischer Abgleich zwischen Satelliten-Sichtungen und Bekannte-Orte-Datenbank zur Identifikation völlig jungfräulicher, exklusiver YouTube-Locations.
 6. **Anti-Halluzinations-Garantie & Haversine-Radius (0 GPS-Fehler)**: Mathematische Distanzberechnung (Haversine-Formel in Python) und Kataster-APIs liefern Koordinaten rein deterministisch. KI-Modelle raten niemals Koordinaten!
-7. **Spektrale Anomalien (0 Token)**: Mathematische Satellitenauswertung via Google Earth Engine.
-8. **Fehlalarme (False Positives) aussortieren (0 Token)**: Automatischer OpenStreetMap- & Kataster-Abgleich.
-9. **Kontextuelle Text- & Archiv-Analyse**: Tiefenrecherche in spanischen Amtsblättern (BOE, DOGV, BOP Alicante/Valencia/Castellón), Zeitungsarchiven (*Hemerotecas*), Kataster-Daten und valencianischen Heimatblogs via **Kimi 2 API & GLM-5 API**.
-10. **Marktreife Produkte**: `.kml` Kartendateien für Smartphones, automatisierte YouTube-Skripte mit historischen Dramen/Timelines sowie Routenpläne für legally accessible, gewerbliche Exkursionen.
+7. **Kategorie-Filterung (`filterCategory`)**: Multi-Kriterien-Filtern nach Gebäudetypen (`🏢 Alle`, `🏭 Fabriken`, `🏰 Burgen`, `🏥 Sanatorien`, `🏚️ Dörfer`, `🏛️ Villen`).
+8. **Echte ESRI Satellitenbild-Engine**: Dynamische Einbindung hochauflösender ESRI ArcGIS World Imagery Kacheln (~15 cm Auflösung) am genauen GPS-Standort statt generischer Platzhalter-Fotos.
+9. **Live Distanz-Matrix (Calle Barcelona 3, Alicante)**: Automatische Echtzeit-Berechnung der Entfernung vom Heimatstandort des Nutzers zu jedem einzelnen Objekt.
+10. **Multi-Tier KI-Resilienz & Error Boundary**: Ausfallsichere Kaskaden-Steuerung für KI-Agenten (`DeepSeek-V4` ➔ `Qwen-3` ➔ `Kimi K3` ➔ `Local Engine`) sowie UI Crash-Protection.
+11. **Marktreife Produkte**: `.kml` Kartendateien für Smartphones, automatisierte YouTube-Skripte mit historischen Dramen/Timelines sowie Routenpläne für legally accessible, gewerbliche Exkursionen.
 
 ---
 

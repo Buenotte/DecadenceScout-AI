@@ -5,7 +5,7 @@
 **Projektpfad**: `C:\Projekte\DecadenceScout AI`  
 **Projektname**: DekadenzScout AI / TerraGhost AI  
 **Zielregion**: Autonome Gemeinschaft Valencia / Comunitat Valenciana (Provinzen Alicante, Valencia & Castellón)  
-**Version**: 4.4 (Inklusive detaillierter Beschreibung aller Python-Bibliotheken, Einsatzorte & Funktionsweisen)  
+**Version**: 4.7 (Inklusive Performance-Optimierung, Daten-Modularisierung, ESRI Satelliten-Engine, Kategorie-Filter, Live-Distanz & KI-Resilienz-Architektur)  
 
 ---
 
@@ -24,15 +24,25 @@ C:\Projekte\DecadenceScout AI\
 │   ├── historian_agent.py         # Agent 3: Historiker-Investigator (BOE, DOGV, Hemerotheken via Kimi 2 API)
 │   └── safety_agent.py            # Agent 4: Safety & Tour Planner (Qwen 3 Cloud API)
 ├── src/                           # Web-Dashboard Quellcode (React & Vite)
-│   ├── components/                # UI Komponenten (Karte, Spot-Liste, Router, Historien-Planer)
-│   ├── App.jsx                    # Hauptansicht (Karte mit 30km Circle Overlay, Radius Slider, Spot Explorer)
+│   ├── components/                # UI Komponenten
+│   │   ├── ErrorBoundary.jsx      # React Fallback UI Schutz vor Render-Abstürzen
+│   │   └── ToastNotification.jsx  # Glassmorphism Echtzeit-Benachrichtigungen
+│   ├── data/                      # Ausgelagerte Daten-Module
+│   │   └── spots.js               # 472 Lost Places Datensätze (13.700 Zeilen modularisiert)
+│   ├── hooks/                     # Custom React Hooks
+│   │   └── useSpotImage.js        # ESRI ArcGIS World Imagery Satellitenbild-Generator
+│   ├── services/                  # KI-Resilienz & Agenten-Pipelines
+│   │   └── aiAgentResilience.js   # Multi-Tier Fallback Chain (DeepSeek -> Qwen -> Kimi -> Local)
+│   ├── App.jsx                    # Hauptansicht (Refactored: 43 KB, useMemo, Filter & Karten-Engine)
 │   ├── index.css                  # Modernes Glassmorphic Dark-Mode Design System
 │   └── main.jsx                   # React Einstiegspunkt
 ├── index.html                     # HTML Grundgerüst
 ├── package.json                   # Web-Anwendung Konfiguration
 ├── vite.config.js                 # Server & Bundler Konfiguration
-├── fachkonzept_poc.md             # Betriebswirtschaftliches & Funktionales Fachkonzept (v4.3)
-└── implementation_plan.md         # Dieses Dokument
+├── docs/                          # Dokumentationszentrum
+│   ├── fachkonzept_poc.md         # Betriebswirtschaftliches & Funktionales Fachkonzept (v4.7)
+│   ├── implementation_plan.md     # Dieses Dokument (v4.7)
+│   └── ki_agenten_kommunikation.md# KI-Agenten Kommunikationsspezifikation
 ```
 
 ---
@@ -678,5 +688,30 @@ export default function App() {
 ## 6. Schritt-für-Schritt Ausführung in Antigravity
 
 Geben Sie Claude 4.6 Sonnet in Antigravity folgenden Befehl:
+
+---
+
+## 7. Version 4.7 Erweiterungen & System-Updates
+
+### ⚡ 7.1 Performance & Refactoring
+1. **Modularisierung von Daten**: Das 472-Objekt Datenset (13.700 Zeilen) wurde aus `App.jsx` isoliert und in `src/data/spots.js` ausgelagert. `App.jsx` schrumpfte dadurch von **563 KB auf 43 KB** (13-fache Größenreduktion).
+2. **React `useMemo` Caching**: Die komplexe Multi-Kriterien-Filterung (`filteredSpots`) wurde in `useMemo` gekapselt. Die Neuberechnung erfolgt ausschließlich bei Änderungen von Suchbegriff, Radius, Provinz, Risiko oder Kategorie.
+3. **Optimierte Karten-Performance**: Entfernen des globalen React State-Re-Renders bei `mouseover`/`mouseout` auf Map-Markern. Stattdessen Nutzung nativer Leaflet-Tooltips ohne Virtual-DOM-Thrashing.
+
+### 🏷️ 7.2 Kategorie-Filter & UI-Erweiterungen
+1. **Kategorie-Filter Chips**: Direkte Filterung nach Gebäudetyps (`🏢 Alle`, `🏭 Fabriken`, `🏰 Burgen`, `🏥 Sanatorien`, `🏚️ Dörfer`, `🏛️ Villen`).
+2. **Hervorgehobene UI-Platzierung**: Positioniert in einer eigens gestylten, amber-farbenen Box direkt unter dem "Suchzentrum"-Dropdown.
+3. **Live-Distanzanzeige**: Dynamische Berechnung der Luftlinien-Entfernung von der Adresse des Nutzers (*Calle Barcelona 3, 03013 Alicante*) zu jedem ausgewählten Objekt.
+4. **Schließen-Button**: Manuelles Schließen des Detailpanels im linken Sidebar-Bereich via `✕ Schließen` Button.
+
+### 🛰️ 7.3 Dynamische ESRI Satellitenbild-Engine (`useSpotImage.js`)
+1. **Keine Platzhalterbilder**: Ersetzung von Unsplash-Standardbildern durch dynamische ESRI ArcGIS World Imagery Satelliten-Kacheln (`latLonToEsriUrl`).
+2. **Präziser GPS-Fokus**: Generiert hochauflösende Satellitenaufnahmen (Zoomstufe 17, ~15 cm Auflösung in Spanien) direkt anhand der Breitengrade und Längengrade des jeweiligen Lost Places.
+
+### 🛡️ 7.4 KI-Resilienz & Fehlerbehandlungs-Architektur
+1. **React Error Boundary (`ErrorBoundary.jsx`)**: Verhindert komplette UI-Abstürze bei unexpected Rendering-Fehlern.
+2. **Multi-Tier Model Cascading (`aiAgentResilience.js`)**: Automatische Failover-Kette (`DeepSeek-V4` ➔ `Qwen-3 Cloud API` ➔ `Kimi K3` ➔ `Local Offline Fallback Engine`).
+3. **Toast Notification System (`ToastNotification.jsx`)**: Live-Status-Benachrichtigungen über KI-Modellwechsel, Netzwerkereignisse und Systemmeldungen.
+
 
 > *"Claude, erstelle das Projekt DekadenzScout AI in `C:\Projekte\DecadenceScout AI` basierend auf dem `implementation_plan.md`. Schreibe alle Dateien, führe `npm install` und `pip install` aus und starte die Anwendung im Entwicklungsmodus."*
