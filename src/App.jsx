@@ -13788,6 +13788,7 @@ export default function App() {
   const [searchQuery, setSearchQuery]       = useState('');
   const [filterProvince, setFilterProvince] = useState('ALL');
   const [filterRisk, setFilterRisk]         = useState('ALL');
+  const [filterCategory, setFilterCategory] = useState('ALL');
 
   const filteredSpots = ALL_SPOTS.filter(spot => {
     const dist = calculateDistance(selectedCity.lat, selectedCity.lon, spot.lat, spot.lon);
@@ -13795,12 +13796,27 @@ export default function App() {
     const statusMatch = filterStatus === 'ALL' || spot.status === filterStatus;
     const provinceMatch = filterProvince === 'ALL' || spot.province === filterProvince;
     const riskMatch = filterRisk === 'ALL' || spot.risk === filterRisk;
+
+    // Category filter matching logic
+    let categoryMatch = true;
+    if (filterCategory === 'FABRIK') {
+      categoryMatch = spot.type.toLowerCase().includes('fabrik') || spot.type.toLowerCase().includes('mühle') || spot.type.toLowerCase().includes('industrie') || spot.name.toLowerCase().includes('fábrica') || spot.name.toLowerCase().includes('harinas');
+    } else if (filterCategory === 'BURG') {
+      categoryMatch = spot.type.toLowerCase().includes('burg') || spot.type.toLowerCase().includes('kastell') || spot.type.toLowerCase().includes('castle') || spot.name.toLowerCase().includes('castillo') || spot.name.toLowerCase().includes('castell');
+    } else if (filterCategory === 'SANATORIUM') {
+      categoryMatch = spot.type.toLowerCase().includes('sanatorium') || spot.type.toLowerCase().includes('klinik') || spot.type.toLowerCase().includes('psychiatrie') || spot.name.toLowerCase().includes('sanatorio') || spot.name.toLowerCase().includes('manicomio') || spot.name.toLowerCase().includes('balneario');
+    } else if (filterCategory === 'DORF') {
+      categoryMatch = spot.type.toLowerCase().includes('dorf') || spot.type.toLowerCase().includes('kolonie') || spot.type.toLowerCase().includes('siedlung') || spot.name.toLowerCase().includes('pueblo') || spot.name.toLowerCase().includes('colonia') || spot.name.toLowerCase().includes('jinquer');
+    } else if (filterCategory === 'VILLA') {
+      categoryMatch = spot.type.toLowerCase().includes('palast') || spot.type.toLowerCase().includes('residenz') || spot.type.toLowerCase().includes('villa') || spot.name.toLowerCase().includes('palau') || spot.name.toLowerCase().includes('palacio') || spot.name.toLowerCase().includes('finca');
+    }
+
     const searchMatch = !searchQuery ||
       spot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       spot.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
       spot.province.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return inRadius && statusMatch && provinceMatch && riskMatch && searchMatch;
+    return inRadius && statusMatch && provinceMatch && riskMatch && categoryMatch && searchMatch;
   });
 
   const knownCount     = filteredSpots.filter(s => s.status === 'KNOWN_HISTORIC_SITE').length;
@@ -13991,6 +14007,31 @@ export default function App() {
                   <option value="MITTEL">🟡 Mittel</option>
                   <option value="HOCH">🔴 Hoch</option>
                 </select>
+              </div>
+            {/* Category Filter Chips */}
+            <div>
+              <label className="text-[9px] text-slate-400 font-bold block mb-1">Gebäudetyp / Kriterium</label>
+              <div className="flex flex-wrap gap-1">
+                {[
+                  { id: 'ALL', label: '🏢 Alle' },
+                  { id: 'FABRIK', label: '🏭 Fabriken' },
+                  { id: 'BURG', label: '🏰 Burgen' },
+                  { id: 'SANATORIUM', label: '🏥 Sanatorien' },
+                  { id: 'DORF', label: '🏚️ Dörfer' },
+                  { id: 'VILLA', label: '🏛️ Villen' },
+                ].map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => setFilterCategory(c.id)}
+                    className={`text-[9px] font-bold px-2 py-1 rounded-lg border transition-all cursor-pointer ${
+                      filterCategory === c.id
+                        ? 'bg-amber-500/25 border-amber-500/50 text-amber-300 shadow'
+                        : 'bg-slate-900/90 border-slate-700/80 text-slate-400 hover:border-slate-500'
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
