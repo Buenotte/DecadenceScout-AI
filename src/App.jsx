@@ -5,6 +5,9 @@ import {
   Compass, Download, Cpu, History, MapPin, Sliders,
   Satellite, Map, Eye, AlertTriangle, CheckCircle, Sparkles, Search
 } from 'lucide-react';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ToastContainer } from './components/ToastNotification';
+import { runResilientAgentScan } from './services/aiAgentResilience';
 
 // Fix default Leaflet icon paths (required for Vite builds)
 delete L.Icon.Default.prototype._getIconUrl;
@@ -13776,7 +13779,7 @@ const RISK_BG   = { NIEDRIG: 'bg-emerald-500/20 border-emerald-500/30', MITTEL: 
 
 const HOME_LOCATION = { lat: 38.3552821, lon: -0.4770499, name: 'Calle Barcelona 3, Alicante' };
 
-export default function App() {
+function AppContent() {
   const [selectedCity, setSelectedCity]   = useState(CITIES[0]);
   const [searchRadiusKm, setRadius]       = useState(250);
 
@@ -13791,6 +13794,21 @@ export default function App() {
   const [filterProvince, setFilterProvince] = useState('ALL');
   const [filterRisk, setFilterRisk]         = useState('ALL');
   const [filterCategory, setFilterCategory] = useState('ALL');
+
+  const [toasts, setToasts]                 = useState([]);
+  const [activeAgentStatus, setActiveAgentStatus] = useState('DeepSeek-V4 API');
+
+  const addToast = (toast) => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev.slice(-3), { ...toast, id }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  };
+
+  const dismissToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
 
   const filteredSpots = ALL_SPOTS.filter(spot => {
     const dist = calculateDistance(selectedCity.lat, selectedCity.lon, spot.lat, spot.lon);
@@ -13831,14 +13849,17 @@ export default function App() {
   }, [selectedCity, searchRadiusKm, filterStatus]);
 
 
-  function handleScan() {
+  async function handleScan() {
     setScanning(true);
-    setTimeout(() => {
-      setScanning(false);
-      if (filteredSpots.length === 0) {
-        setRadius(75); // Auto-erweitere Radius auf 75 km
-      }
-    }, 1800);
+    const result = await runResilientAgentScan({
+      onStatusUpdate: ({ activeAgent }) => setActiveAgentStatus(activeAgent),
+      onToast: addToast
+    });
+    setScanning(false);
+
+    if (filteredSpots.length === 0) {
+      setRadius(75);
+    }
   }
 
 
@@ -14504,6 +14525,17 @@ export default function App() {
           ))}
         </MapContainer>
       </main>
+
+      {/* Toast Notification Container */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
   );
 }
