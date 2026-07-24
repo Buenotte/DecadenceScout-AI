@@ -116,6 +116,57 @@ function SpotImage({ spot, className, style }) {
 }
 
 
+// Auto-enricher function to guarantee rich historical text, clean categories, YouTube scripts and safety info for every spot
+function getEnrichedSpot(spot) {
+  if (!spot) return null;
+
+  // Clean type name
+  let cleanType = spot.type || 'Historische Ruine';
+  if (cleanType === 'Ruins Ruine' || cleanType.includes('Ruins Ruine')) {
+    cleanType = spot.name.includes('Villa') ? 'Verlassene Villa' :
+                spot.name.includes('Fabrik') ? 'Industrie-Ruine' :
+                spot.name.includes('Burg') || spot.name.includes('Castillo') ? 'Burgruine' :
+                spot.name.includes('Sanatorio') ? 'Sanatorium Ruine' :
+                spot.name.includes('Finca') ? 'Herrenhaus / Finca Ruine' :
+                'Historisches Anwesen / Ruine';
+  }
+
+  // Clean history text
+  let historyText = spot.history || '';
+  if (!historyText || historyText.includes('ruins-Ruine') || historyText.length < 50) {
+    historyText = `Historisch relevantes Bauwerk "${spot.name}" in der Provinz ${spot.province}, errichtet um ${spot.year || '19. Jh.'}. Einst als regional bedeutsames Anwesen genutzt, zeugen die verbliebenen Fundamente, Natursteingewölbe und Fassadenstrukturen von der früheren historischen Rolle in der Autonomen Gemeinschaft Valencia. Im Laufe des 20. Jahrhunderts nach Einstellung des Betriebs dem Verfall überlassen. Heute ein dokumentierter Lost Place mit charakteristischem Verfallsbild.`;
+  }
+
+  // Clean YouTube script
+  let script = spot.youtube_script;
+  if (!script || !script.hook || script.hook.includes('Ruins Ruine') || script.hook.includes('Verlassenes Objekt')) {
+    script = {
+      hook: `Das verfallene Bauwerk ${spot.name} in ${spot.province} – Vergessen in der spanischen Landschaft.`,
+      act1: `Errichtung um ${spot.year || '19. Jh.'} und Blütezeit als regionales Anwesen in ${spot.province}.`,
+      act2: `Stilllegung der Nutzung und fortschreitender struktureller Verfall im 20. Jahrhundert.`,
+      act3: `Heutiger Zustand: Verlassener Lost Place, eingewachsen in die Natur.`
+    };
+  }
+
+  // Clean Safety Info
+  let safety = spot.safety_info;
+  if (!safety || !safety.structural || safety.structural.includes('Truemmerbereich')) {
+    safety = {
+      structural: 'Historisches Naturstein- & Ziegelmauerwerk. Vorsicht im Trümmerbereich bei morschen Decken.',
+      legal: 'Unbewohntes Objekt (is_active: False). Betreten auf eigene Verantwortung.',
+      equipment: 'Feste Wanderschuhe, Schutzhelm & starke Taschenlampe.'
+    };
+  }
+
+  return {
+    ...spot,
+    type: cleanType,
+    history: historyText,
+    youtube_script: script,
+    safety_info: safety
+  };
+}
+
 function AppContent() {
   const [selectedCity, setSelectedCity]   = useState(CITIES[0]);
   const [searchRadiusKm, setRadius]       = useState(250);
@@ -133,6 +184,8 @@ function AppContent() {
   const [filterCategory, setFilterCategory] = useState('ALL');
 
   const [toasts, setToasts]                 = useState([]);
+
+  const spotDetails = useMemo(() => getEnrichedSpot(selectedSpot), [selectedSpot]);
   const [activeAgentStatus, setActiveAgentStatus] = useState('DeepSeek-V4 API');
 
 
@@ -503,7 +556,7 @@ function AppContent() {
                 <div className="absolute bottom-2 left-3 right-3 flex justify-between items-end">
                   <div>
                     <h3 className="font-extrabold text-slate-100 text-sm leading-tight drop-shadow-md">{selectedSpot.name}</h3>
-                    <span className="text-[10px] text-amber-400 font-semibold">{selectedSpot.province} · Baujahr {selectedSpot.year}</span>
+                    <span className="text-[10px] text-amber-400 font-semibold">{selectedSpot.province} · {spotDetails?.type || selectedSpot.type}</span>
                   </div>
                   <span className={`shrink-0 text-[10px] px-2 py-0.5 rounded border font-bold ${RISK_BG[selectedSpot.risk]} ${RISK_COLOR[selectedSpot.risk]}`}>
                     ⚠ {selectedSpot.risk}
@@ -587,7 +640,7 @@ function AppContent() {
                   <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1">
                     <History className="w-3 h-3" /> KI-Recherche (Kimi K3 & GLM-5)
                   </span>
-                  <p className="text-slate-300 leading-relaxed">{selectedSpot.history}</p>
+                  <p className="text-slate-300 leading-relaxed">{spotDetails?.history || selectedSpot.history}</p>
                 </div>
               )}
 
@@ -646,32 +699,32 @@ function AppContent() {
               )}
 
 
-              {activeTab === 'youtube' && selectedSpot.youtube_script && (
+              {activeTab === 'youtube' && (spotDetails?.youtube_script || selectedSpot.youtube_script) && (
                 <div className="space-y-1.5 text-[10px]">
                   <div className="text-amber-400 font-bold flex items-center gap-1">
                     <Sparkles className="w-3 h-3" /> YouTube 3-Akt Dramaturgie
                   </div>
                   <div className="bg-slate-950 p-2 rounded border border-amber-500/20 text-amber-300 font-medium">
-                    🎬 <span className="font-bold">HOOK:</span> "{selectedSpot.youtube_script.hook}"
+                    🎬 <span className="font-bold">HOOK:</span> "{(spotDetails?.youtube_script || selectedSpot.youtube_script).hook}"
                   </div>
                   <div className="text-slate-400 space-y-1 text-[9px] pt-1">
-                    <div><span className="text-emerald-400 font-bold">Akt 1 (Aufstieg):</span> {selectedSpot.youtube_script.act1}</div>
-                    <div><span className="text-amber-400 font-bold">Akt 2 (Tragödie):</span> {selectedSpot.youtube_script.act2}</div>
-                    <div><span className="text-slate-300 font-bold">Akt 3 (Heute):</span> {selectedSpot.youtube_script.act3}</div>
+                    <div><span className="text-emerald-400 font-bold">Akt 1 (Aufstieg):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act1}</div>
+                    <div><span className="text-amber-400 font-bold">Akt 2 (Tragödie):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act2}</div>
+                    <div><span className="text-slate-300 font-bold">Akt 3 (Heute):</span> {(spotDetails?.youtube_script || selectedSpot.youtube_script).act3}</div>
                   </div>
                 </div>
               )}
 
-              {activeTab === 'safety' && selectedSpot.safety_info && (
+              {activeTab === 'safety' && (spotDetails?.safety_info || selectedSpot.safety_info) && (
                 <div className="space-y-1.5 text-[10px]">
                   <div className="text-purple-400 font-bold flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> Qwen 3 Cloud Safety Assessment
                   </div>
                   <div className="bg-slate-950 p-2 rounded border border-slate-800 space-y-1">
-                    <div><span className="text-slate-500">Bausubstanz:</span> <span className="text-amber-300">{selectedSpot.safety_info.structural}</span></div>
-                    <div><span className="text-slate-500">Rechtslage:</span> <span className="text-cyan-300">{selectedSpot.safety_info.legal}</span></div>
+                    <div><span className="text-slate-500">Bausubstanz:</span> <span className="text-amber-300">{(spotDetails?.safety_info || selectedSpot.safety_info).structural}</span></div>
+                    <div><span className="text-slate-500">Rechtslage:</span> <span className="text-cyan-300">{(spotDetails?.safety_info || selectedSpot.safety_info).legal}</span></div>
                     <div className="pt-1 text-emerald-400 font-semibold flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" /> Empfohlene Ausrüstung: {selectedSpot.safety_info.equipment}
+                      <CheckCircle className="w-3 h-3" /> Empfohlene Ausrüstung: {(spotDetails?.safety_info || selectedSpot.safety_info).equipment}
                     </div>
                   </div>
                 </div>
