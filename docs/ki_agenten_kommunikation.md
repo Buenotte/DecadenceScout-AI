@@ -355,6 +355,60 @@ Hier ist die genaue Aufstellung aller Preise, Anbieter und Use Cases im laufende
 
 ---
 
+### ⚡ 10.2 Anfrage-Häufigkeiten: Lokaler Betrieb (0 Tokens) vs. KI-Agenten Use Cases
+
+In **DekadenzScout AI** ist die KI-Architektur so gebaut, dass **90 % des normalen Programmbetriebs komplett lokal & gebührenfrei (0 API-Anfragen)** ablaufen. KI-Agenten werden **nur bei gezielten Aktionen** angefragt.
+
+#### 🟢 1. Lokale Aktionen im Dashboard (0 KI-Anfragen / 0 € Kosten)
+Bei folgenden Aktionen wird **KEIN KI-Agent** kontaktiert (reines JavaScript, Caching & Mathematik auf Ihrem Rechner):
+
+* 🗺️ **Karten-Zoom, Pan & Hovering**: 0 Anfragen (Leaflet GIS)
+* 🏷️ **Kategorie-Filter (Fabriken, Burgen, Sanatorien, Dörfer, Villen)**: 0 Anfragen (Client-seitiges `useMemo` Caching)
+* 📐 **Radius-Schieberegler & Provinz-Wahl**: 0 Anfragen
+* 📍 **Live-Distanzberechnung** (*Calle Barcelona 3, Alicante*): 0 Anfragen (Haversine-Formel)
+* 🛰️ **ESRI Satellitenbild-Vorschau**: 0 Anfragen (mathematische GPS-Kachel-Berechnung)
+* 📱 **KML-Schatzkarten Export für Google Maps**: 0 Anfragen
+
+#### 🤖 2. KI-Agenten Use Cases & Anfrage-Häufigkeiten
+
+##### **Use Case 1: Sektor-Scan ausführen (`handleScan`)**
+* **Wann**: Nur wenn der Nutzer in der Seitenleiste explizit auf **"Scan Sektor"** klickt.
+* **Häufigkeit**: **Exakt 1 KI-Anfrage pro Scan-Klick**.
+* **Eingesetzte Agenten**: 
+  * **Haupt-Orchestrator**: `DeepSeek-V4 API` (Analysiert Geodaten-Strukturen).
+  * *Automatischer Failover bei Überlastung*: `Qwen-3 Cloud` ➔ `Kimi K3` ➔ `Lokale Offline Engine`.
+
+##### **Use Case 2: Historisches Archiv-Mining (Agent 3 – Historiker)**
+* **Wann**: Wenn im Backend neue Neuentdeckungen (*UNCHARTED*) durch spanische Zeitungsarchive (*Hemeroteca BNE*) und Amtsblätter (*BOE / DOGV*) geprüft werden.
+* **Häufigkeit**: **1 KI-Anfrage pro neu recherchiertem Objekt**.
+* **Eingesetzte Agenten**: `Kimi 2 / Kimi K3 API` (Moonshot AI mit 2M+ Tokens Long-Context, ideal für das Lesen ganzer Archivseiten).
+
+##### **Use Case 3: Sicherheits- & Risiko-Bewertung (Agent 4 – Safety & Tour Planner)**
+* **Wann**: Zur rechtlichen & baulichen Gefahrenanalyse (Einsturzrisiko, Art. 202 Hausfriedensbruch-Prüfung, Empfohlene Ausrüstung).
+* **Häufigkeit**: **1 KI-Anfrage pro Objekt-Analyse**.
+* **Eingesetzte Agenten**: `Qwen 3 Cloud API` (Alibaba) oder `GLM-5 API`.
+
+##### **Use Case 4: YouTube-Skript & Storytelling Generator**
+* **Wann**: Beim Generieren von dramaturgischen Video-Skripten (Hook, Akt 1, Akt 2, Akt 3) für Urbex-Recherchen.
+* **Häufigkeit**: **1 KI-Anfrage pro Objekt-Skript**.
+* **Eingesetzte Agenten**: `DeepSeek-V4 API` oder `GLM-5 API`.
+
+---
+
+### 💾 10.3 Lokale Datenhaltung (472 Objekte) vs. Live-Sektor-Scan
+
+#### **Wird bei jeder Nutzung gescannt?**
+**Nein, im Alltag ist kein Scannen erforderlich!**
+* **472 Objekte** (bekannte historische Ruinen und verifizierte Neuentdeckungen) sind bereits vollständig gescannt, aufbereitet und **fest lokal im Projekt gespeichert** (`src/data/spots.js`).
+* Beim Öffnen der Anwendung stehen alle 472 Objekte sofort zur Verfügung. Filtern, Suchen, Distanzberechnung und KML-Export funktionieren sofort, offline und ohne Netzwerkanfragen.
+
+#### **Wofür dient der "Scan Sektor"-Button?**
+Der Button ist eine **Erweiterungs- & Live-Recherche-Funktion**:
+1. **Neue Entdeckungen**: Wenn gezielt nach frischen Satelliten-Updates (Sentinel-2) oder neuen Kataster-Einträgen in einer bestimmten Region gesucht wird.
+2. **Aktualisierung**: Um bestehende Sektoren auf geänderte Sicherheits- oder Rechtszustände neu abzufragen.
+
+---
+
 ## 🎯 11. Prompt-Techniken die wir in DekadenzScout AI nutzen
 
 ### Technik 1: „Rolle zuweisen" (Role Prompting)
