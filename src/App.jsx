@@ -13773,12 +13773,22 @@ export default function App() {
   const [activeTab, setActiveTab]         = useState('history');
 
   const [showAllRegions, setShowAllRegions] = useState(true);
+  const [searchQuery, setSearchQuery]       = useState('');
+  const [filterProvince, setFilterProvince] = useState('ALL');
+  const [filterRisk, setFilterRisk]         = useState('ALL');
 
   const filteredSpots = ALL_SPOTS.filter(spot => {
     const dist = calculateDistance(selectedCity.lat, selectedCity.lon, spot.lat, spot.lon);
     const inRadius = showAllRegions || searchRadiusKm >= 200 || dist <= searchRadiusKm;
     const statusMatch = filterStatus === 'ALL' || spot.status === filterStatus;
-    return inRadius && statusMatch;
+    const provinceMatch = filterProvince === 'ALL' || spot.province === filterProvince;
+    const riskMatch = filterRisk === 'ALL' || spot.risk === filterRisk;
+    const searchMatch = !searchQuery ||
+      spot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      spot.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      spot.province.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return inRadius && statusMatch && provinceMatch && riskMatch && searchMatch;
   });
 
   const knownCount     = filteredSpots.filter(s => s.status === 'KNOWN_HISTORIC_SITE').length;
@@ -13925,6 +13935,51 @@ export default function App() {
               <div className="flex justify-between"><span>Orchestrator:</span> <span className="text-amber-400 font-medium">DeepSeek-V4 API</span></div>
               <div className="flex justify-between"><span>Archiv-Mining:</span> <span className="text-cyan-400 font-medium">Kimi K3 (2M+ Caching)</span></div>
               <div className="flex justify-between"><span>Safety Agent:</span> <span className="text-purple-400 font-medium">Qwen 3 Cloud API</span></div>
+            </div>
+          </div>
+
+          {/* Live Search & Multi-Filters */}
+          <div className="glass-panel p-3 rounded-xl space-y-2.5">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+              <input
+                type="text"
+                placeholder="Objekt oder Ort suchen..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-2.5 py-1.5 text-xs text-slate-200 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+
+            {/* Dropdowns for Province & Risk */}
+            <div className="grid grid-cols-2 gap-2 text-[10px]">
+              <div>
+                <label className="text-[9px] text-slate-400 font-bold block mb-1">Provinz</label>
+                <select
+                  value={filterProvince}
+                  onChange={e => setFilterProvince(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-1.5 text-[10px] text-slate-200 focus:border-amber-500 cursor-pointer"
+                >
+                  <option value="ALL">Alle Provinzen</option>
+                  <option value="Alicante">Alicante</option>
+                  <option value="Valencia">Valencia</option>
+                  <option value="Castellón">Castellón</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[9px] text-slate-400 font-bold block mb-1">Risiko</label>
+                <select
+                  value={filterRisk}
+                  onChange={e => setFilterRisk(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-1.5 text-[10px] text-slate-200 focus:border-amber-500 cursor-pointer"
+                >
+                  <option value="ALL">Alle Risiken</option>
+                  <option value="NIEDRIG">🟢 Niedrig</option>
+                  <option value="MITTEL">🟡 Mittel</option>
+                  <option value="HOCH">🔴 Hoch</option>
+                </select>
+              </div>
             </div>
           </div>
 
