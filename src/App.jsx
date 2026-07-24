@@ -127,6 +127,7 @@ function getSpotTownOrCity(spot) {
   if (spot.name.includes('Sueca')) return 'Ciudad: Sueca';
   if (spot.name.includes('Agost')) return 'Pueblo: Agost';
   if (spot.name.includes('Peñacerrada') || spot.name.includes('Mutxamel')) return 'Pueblo: Mutxamel';
+  if (spot.name.includes('Archena') || (spot.lat >= 38.10 && spot.lat <= 38.16 && spot.lon >= -1.35 && spot.lon <= -1.25)) return 'Pueblo: Archena (Balneario)';
 
   // Extract parentheses if present e.g. "Name (City - Province)"
   const match = spot.name.match(/\(([^)]+)\)/);
