@@ -4,3 +4,6 @@ dist/
 .env.local
 *.log
 .DS_Store
+backups/
+all_documents_backup/
+*.bak
