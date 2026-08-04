@@ -329,14 +329,3 @@ content = r"""# 🎬 FINCA LACY: ЕДИНЫЙ МАСТЕР-СЦЕНАРИЙ И �
 * 📄 **Документ Методологии (MD)**: `C:\Users\Administrador\Downloads\Finca_Lacy_3_Way_Synthesis_Methodology_Concept.md`
 * 🖼️ **Схема с номерами (JPG)**: `C:\Users\Administrador\Downloads\Finca_Lacy_Architectural_Floor_Plan.jpg`
   """
-
-p1 = r"C:\Users\Administrador\Downloads\Finca_Lacy_Master_Shooting_Script_Optimal_Route.md"
-p2 = r"C:\Projekte\DecadenceScout AI\themes\Finca Lacy\Finca_Lacy_Master_Shooting_Script_Optimal_Route.md"
-
-with open(p1, "w", encoding="utf-8") as f:
-    f.write(content)
-
-with open(p2, "w", encoding="utf-8") as f:
-    f.write(content)
-
-print("SUCCESS: Master script updated with ¡Muy buenas a todos!")
