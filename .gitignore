@@ -7,3 +7,8 @@ dist/
 backups/
 all_documents_backup/
 *.bak
+themes/*/fotos/old/
+themes/*/fotos/title_*.png
+themes/*/fotos/kling_*.png
+themes/*/video/
+*.mp4
