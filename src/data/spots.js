@@ -1,4 +1,4 @@
-﻿// Alle verlassenen Objekte der Comunitat Valenciana
+// Alle verlassenen Objekte der Comunitat Valenciana
 export const ALL_SPOTS = [
   {
     "id": 1,
@@ -2413,27 +2413,27 @@ export const ALL_SPOTS = [
     "lat": 38.45298,
     "lon": -0.80603,
     "province": "Alicante",
-    "type": "Ruins Ruine",
+    "type": "Herrenhaus / Finca Ruine",
     "status": "KNOWN_HISTORIC_SITE",
     "year": "19. Jh.",
     "built_area": "2 Etagen",
     "catastro_ref": "ALI00083",
     "isIllustration": true,
     "image": "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=800&q=80",
-    "history": "Historische ruins-Ruine in der Provinz Alicante. Erfasst aus OpenStreetMap Geodaten.",
+    "history": "Historisches Herrenhaus (Casa Señorial des 19. Jahrhunderts) bei Elda/Petrer in der Provinz Alicante, erbaut von der adligen Familie Lacy. Einst ein prachtvoller Adelssitz mit landwirtschaftlichem Anwesen, Kapelle und markantem Aussichtsturm. Im 20. Jahrhundert nach Einstellung des Betriebes verfallen. Heute eine geschützte, aber stark verfallene Ruine mit Natursteingewölben und historischer Fassade.",
     "risk": "MITTEL",
     "ndvi": 0.55,
     "ndwi": 0.08,
     "youtube_script": {
-      "hook": "Die vergessene Ruine Finca Lacy in Alicante.",
-      "act1": "Erfassung in den historischen Archiven.",
-      "act2": "Stilllegung und Verfall im 20. Jahrhundert.",
-      "act3": "Heute: Stille Ruine in der Natur."
+      "hook": "Das verfallene Adelsanwesen Finca Lacy – Einstiger Prachtbau der Familie Lacy in Alicante.",
+      "act1": "Errichtung im 19. Jahrhundert als prachtvolles Herrenhaus mit Landwirtschaft und Turm.",
+      "act2": "Niedergang im 20. Jahrhundert und fortschreitender struktureller Verfall.",
+      "act3": "Heute: Verlassene historische Ruine vor den Toren von Elda."
     },
     "safety_info": {
-      "structural": "Naturstein / Beton. Vorsicht im Truemmerbereich.",
-      "legal": "Frei zugaenglich oder oeffentlicher Grund.",
-      "equipment": "Feste Wanderschuhe & Taschenlampe."
+      "structural": "Naturstein & historisches Mauerwerk. Einsturzgefahr bei morschen Deckenbalken.",
+      "legal": "Geschütztes Historisches Erbe (Patrimonio). Betreten auf eigene Gefahr.",
+      "equipment": "Feste Wanderschuhe, Helm & Taschenlampe."
     }
   },
   {
